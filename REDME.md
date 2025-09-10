@@ -11,13 +11,12 @@ Sistema web desarrollado en Django para la gestión y control de bienes patrimon
 - Múltiples ambientes (Desarrollo, Producción)
 
 ## 👥 Equipo de Desarrollo
-- **Docente**: [Nombre del docente]
+- **Docentes**: Karina Alvarez, Alejandra , Felipe Morales, Fernando Diego Santolaria
 - **Estudiantes**: ISFDyT 210
 
 ## 🛠️ Tecnologías
 - Django 4.2.7
-- PostgreSQL (Producción)
-- SQLite (Desarrollo)
+- SQLite (Desarrollo, Testing, Produccion)
 - Bootstrap 5
 - JavaScript ES6+
 
