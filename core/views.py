@@ -6,3 +6,6 @@ def home(request):
 
 def lista_bienes(request):
     return HttpResponse("Lista de bienes patrimoniales")
+
+def Expediente_list(request):
+    return HttpResponse("Lista de expedientes")
