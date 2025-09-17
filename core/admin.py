@@ -21,11 +21,6 @@ class BienInline(admin.TabularInline):
     readonly_fields = ['numero_inventario', 'nombre', 'tipo', 'estado', 'ubicacion_actual']
     can_delete = False
 
-
-# Si querés ver los bienes dentro del Expediente, descomentá la línea siguiente:
-# ExpedienteAdmin.inlines = [BienInline]
-
-
 @admin.register(BienPatrimonial, site=custom_admin_site)
 class BienPatrimonialAdmin(admin.ModelAdmin):
     list_display = [
