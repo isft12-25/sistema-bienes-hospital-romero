@@ -1,0 +1,8 @@
+# Entorno: Testing
+DEBUG=True
+SECRET_KEY=clave-secreta-testing-hospital-melchor-romero-2024
+ALLOWED_HOSTS=testserver,localhost,127.0.0.1
+DJANGO_ENV=testing
+DB_NAME=db_testing.sqlite3
+HOSPITAL_NAME=Hospital Melchor Romero - Testing
+EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
