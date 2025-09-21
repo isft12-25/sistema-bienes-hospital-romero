@@ -88,9 +88,9 @@ pip install -r requirements\development.txt
 ```powershell
 # 1. Copiar archivo de entorno según rol
 # Para BACK y FRONT:
-copy .env.development .env
+copy enviroment\env_development .env
 # Para TESTING:
-copy .env.testing .env
+copy enviroment\env_testing .env
 
 # 2. Verificar que el archivo .env existe
 dir .env
