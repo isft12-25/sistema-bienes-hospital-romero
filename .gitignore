@@ -76,3 +76,8 @@ logs/
 .coverage
 htmlcov/
 .coverage.*
+
+# Migrations (excluye archivos .py pero mantiene el __init__.py)
+*/migrations/*.py
+!*/migrations/__init__.py
+*/migrations/*.pyc
