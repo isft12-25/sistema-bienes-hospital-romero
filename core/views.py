@@ -2,8 +2,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def home(request):
-    return HttpResponse("¡Sistema de Gestión de Bienes Patrimoniales - Hospital Melchor Romero!")
+    """Vista para la página de inicio"""
+    return render(request, 'core/inicio/home.html')
 
+def login_view(request):
+    """Vista para la página de login"""
+    return render(request, 'login.html')
+	
 def lista_bienes(request):
     return HttpResponse("Lista de bienes patrimoniales")
 

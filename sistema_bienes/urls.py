@@ -4,7 +4,7 @@ from .admin import custom_admin_site
 
 urlpatterns = [
     path("admin/", custom_admin_site.urls),
-    path("", include("core.urls")),
+	path("", include("core.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
 

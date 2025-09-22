@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sistema de Gestión de Bienes Patrimoniales{% endblock %}
+
+{% block extra_css %}
+<!-- Estilos específicos para la página de inicio -->
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Fondos laterales -->
+<img src="{% static 'img/lateral-izquierda.png' %}" alt="Decoración izquierda" class="lateral izquierda">
+<img src="{% static 'img/lateral-derecha.png' %}" alt="Decoración derecha" class="lateral derecha">
+
+<!-- Contenedor principal -->
+<div class="login-container">
+    <div class="logo-container">
+        <!-- Logo -->
+        <img class="logo" src="{% static 'img/logo-hospital.png' %}" alt="Logo del Sistema de Patrimonio">
+    </div>
+    
+    <h1 class="title">Sistema<br>Gestión de Patrimonio</h1>
+    <p class="subtitle">Inicia sesión como</p>
+    
+    <div class="login-options">
+        <button class="login-button" id="admin-btn">
+            <i class="fas fa-user-cog"></i> Administrador
+        </button>
+        <button class="login-button" id="user-btn">
+            <i class="fas fa-user"></i> Usuario
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Scripts específicos para la página de inicio -->
+<script src="{% static 'js/home.js' %}"></script>
+{% endblock %}
