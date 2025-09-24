@@ -1,6 +1,7 @@
-/* Fuente global */
+/* --- ESTILOS ESPECÍFICOS PARA RECUPERAR CONTRASEÑA --- */
+
 body {
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-open-sans);
     margin: 0;
     padding: 0;
     background-color: #fff;
@@ -13,7 +14,7 @@ body {
 /* Header y Footer */
 .main-header, .main-footer {
     height: 40px;
-    background-color: #00a8c7;
+    background-color: var(--primary-blue-darker);
 }
 
 /* Contenedor central */
@@ -91,7 +92,7 @@ body {
 
 .message {
     font-size: 1rem;
-    color: #555; /* gris neutro */
+    color: #555;
     margin-bottom: 2rem;
 }
 
@@ -100,7 +101,7 @@ body {
     padding: 0.75rem;
     border: none;
     border-radius: 25px;
-    background-color: #00a8c7;
+    background-color: var(--primary-blue-darker);
     color: #fff;
     font-size: 1rem;
     font-weight: bold;
@@ -108,18 +109,19 @@ body {
     transition: background-color 0.3s ease;
     text-decoration: none;
     display: block;
+    margin-bottom: 10px;
 }
 
 .btn:hover {
-    background-color: #007b91;
+    background-color: #006e87;
 }
 
 .back-btn {
-    background-color: #00a8c7; /* igual estilo institucional */
+    background-color: var(--primary-blue-darker);
 }
 
 .back-btn:hover {
-    background-color: #007b91;
+    background-color: #006e87;
 }
 
 @media (max-width: 768px) {
@@ -130,5 +132,10 @@ body {
 
     .left-panel {
         height: 200px;
+    }
+    
+    .left-panel-content {
+        flex-direction: column;
+        gap: 10px;
     }
 }

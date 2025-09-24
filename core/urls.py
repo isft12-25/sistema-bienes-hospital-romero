@@ -1,10 +1,9 @@
 from django.urls import path
-from . import views
-
-app_name = 'core'
+from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('bienes/', views.lista_bienes, name='lista_bienes'),
-    path('expedientes/', views.Expediente_list, name='lista_expedientes'),
+    path('', TemplateView.as_view(template_name='inicio.html'), name='inicio'),
+    path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
+    path('recuperar-password/', TemplateView.as_view(template_name='recuperar_password.html'), name='recuperar_password'),
+    path('dashboard/', TemplateView.as_view(template_name='home_admin.html'), name='dashboard'),
 ]

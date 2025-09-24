@@ -1,16 +1,13 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 
-def home(request):
-    """Vista para la página de inicio"""
-    return render(request, 'core/inicio/home.html')
+def inicio(request):
+    return render(request, 'inicio.html')
 
 def login_view(request):
-    """Vista para la página de login"""
     return render(request, 'login.html')
-	
-def lista_bienes(request):
-    return HttpResponse("Lista de bienes patrimoniales")
 
-def Expediente_list(request):
-    return HttpResponse("Lista de expedientes")
+def recuperar_password(request):
+    return render(request, 'recuperar_password.html')
+
+def home_admin(request):
+    return render(request, 'home_admin.html')
