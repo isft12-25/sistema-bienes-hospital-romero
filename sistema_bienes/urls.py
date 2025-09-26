@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
+from .admin import custom_admin_site
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # 👈 Admin agregado
+    path('admin/', custom_admin_site.urls),  # 👈 Admin agregado
     path('', include('core.urls')),   # Tu app principal
 ]
 
