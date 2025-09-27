@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - Sistema de Patrimonio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Header superior -->
+<div class="header-bar"></div>
+
+<!-- Contenedor principal -->
+<div class="container">
+    <div class="login-box" id="loginBox">
+        <div class="header">
+            <img src="{% static 'img/logo.png' %}" alt="Logo Hospital Dr. Alejandro Korn">
+            <div class="title">
+                <h1>Sistema</h1>
+                <h2>Gestión de Patrimonio</h2>
+            </div>
+        </div>
+
+        <!-- Formulario de login -->
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="usuario">Usuario</label>
+                <div class="input-field" id="usernameField">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="usuario" name="usuario" autocomplete="username">
+                </div>
+                <div class="error-message" id="usernameError"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="contrasena">Contraseña</label>
+                <div class="input-field" id="passwordField">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="contrasena" name="contrasena" autocomplete="current-password">
+                </div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <div class="error-message" id="loginError">El Usuario y/o Contraseña es incorrecto</div>
+
+            <a href="#" class="forgot-password">Olvidé mi Contraseña</a>
+            <button type="submit" class="login-button" id="loginButton">
+                <span class="spinner"></span>
+                <span class="button-text">Iniciar Sesión</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer inferior -->
+<div class="footer-bar"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/login.js' %}"></script>
+{% endblock %}
+

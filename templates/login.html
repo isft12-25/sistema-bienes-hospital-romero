@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - Sistema de Patrimonio{% endblock %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<img src="{% static 'img/lateral-izquierda.png' %}" alt="Decoración izquierda" class="lateral izquierda">
+<img src="{% static 'img/lateral-derecha.png' %}" alt="Decoración derecha" class="lateral derecha">
+
+<div class="login-container">
+    <div class="logo-container">
+        <img class="logo" src="{% static 'img/logo.png' %}" alt="Logo del Hospital">
+    </div>
+
+    <h1 class="title">Sistema<br>Gestión de Patrimonio</h1>
+
+    {% include 'includes/messages.html' %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="input-group">
+            <label for="usuario">Usuario</label>
+            <div class="input-field">
+                <i class="fas fa-user"></i>
+                <input type="text" id="usuario" name="usuario" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="contrasena">Contraseña</label>
+            <div class="input-field">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="contrasena" name="contrasena" required>
+            </div>
+        </div>
+
+        <a href="{% url 'recuperar_password' %}" class="forgot-password">Olvidé mi Contraseña</a>
+
+        <button type="submit" class="login-button">Iniciar Sesión</button>
+    </form>
+</div>
+{% endblock %}
+
+
+
+
+
+
