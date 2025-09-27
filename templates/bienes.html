@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bienes Patrimoniales{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/bienes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="titulo-operadores">
+  <h2>BIENES PATRIMONIALES</h2>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <form method="get" style="flex: 1; display: flex; gap: 5px;">
+    <input type="text" name="q" placeholder="Buscar..." value="{{ request.GET.q }}">
+    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+  </form>
+</div>
+
+<!-- Tabla -->
+<div class="tabla-operadores-container">
+  <table class="tabla-operadores">
+    <thead>
+      <tr>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>N° Expediente</th>
+        <th>N° Compra</th>
+        <th>Origen</th>
+        <th>Fecha</th>
+        <th>Precio</th>
+        <th>ID</th>
+        <th>Servicio</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Fila de alta -->
+      <tr>
+        <form method="post" action="{% url 'bien_create' %}">
+          {% csrf_token %}
+          <td>{{ form.descripcion }}</td>
+          <td>{{ form.cantidad }}</td>
+          <td>{{ form.expediente }}</td>
+          <td>{{ form.compra }}</td>
+          <td>{{ form.origen }}</td>
+          <td>{{ form.fecha }}</td>
+          <td>{{ form.precio }}</td>
+          <td>{{ form.identificador }}</td>
+          <td>{{ form.servicio }}</td>
+          <td>
+            <button type="submit" class="btn-guardar">➕ Alta</button>
+          </td>
+        </form>
+      </tr>
+
+      <!-- Filas de bienes -->
+      {% for bien in bienes %}
+      {% if bien.id == editar_id %}
+      <!-- Fila en modo edición -->
+      <tr>
+        <form method="post" action="{% url 'bien_update' bien.id %}">
+          {% csrf_token %}
+          <td>{{ form.descripcion }}</td>
+          <td>{{ form.cantidad }}</td>
+          <td>{{ form.expediente }}</td>
+          <td>{{ form.compra }}</td>
+          <td>{{ form.origen }}</td>
+          <td>{{ form.fecha }}</td>
+          <td>{{ form.precio }}</td>
+          <td>{{ form.identificador }}</td>
+          <td>{{ form.servicio }}</td>
+          <td>
+            <button type="submit" class="btn-guardar">💾 Guardar</button>
+            <a href="{% url 'bienes_list' %}" class="btn-cancelar">Cancelar</a>
+          </td>
+        </form>
+      </tr>
+      {% else %}
+      <!-- Fila normal -->
+      <tr>
+        <td>{{ bien.descripcion }}</td>
+        <td>{{ bien.cantidad }}</td>
+        <td>{{ bien.expediente }}</td>
+        <td>{{ bien.compra }}</td>
+        <td>{{ bien.origen }}</td>
+        <td>{{ bien.fecha|date:"d/m/Y" }}</td>
+        <td>${{ bien.precio }}</td>
+        <td>{{ bien.identificador }}</td>
+        <td>{{ bien.servicio }}</td>
+        <td>
+          <a href="{% url 'bien_update' bien.id %}" class="btn-editar"><i class="fa-solid fa-pen"></i></a>
+          <a href="{% url 'bien_delete' bien.id %}" class="btn-eliminar"><i class="fa-solid fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endif %}
+      {% empty %}
+      <tr>
+        <td colspan="10">No hay bienes registrados.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
