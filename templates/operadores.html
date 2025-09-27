@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Operadores - Sistema de Patrimonio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/operadores.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="titulo-operadores">
+    <button class="btn-icono-agregar" data-view="alta-operador-view">
+        <i class="fa-solid fa-user-plus"></i>
+    </button>
+    <h2>OPERADORES</h2>
+</div>
+
+<div class="tabla-operadores-container">
+    <table class="tabla-operadores">
+        <thead>
+            <tr>
+                <th>OPERADORES</th>
+                <th>NOMBRES Y APELLIDOS</th>
+                <th>VER MÁS</th>
+                <th>BAJA</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>PABLO</td>
+                <td>Pablo Larralde</td>
+                <td><button class="btn-ver-mas">Ver</button></td>
+                <td><button class="btn-baja">Baja</button></td>
+            </tr>
+            <tr>
+                <td>LEONEL</td>
+                <td>Leonel Martinez</td>
+                <td><button class="btn-ver-mas">Ver</button></td>
+                <td><button class="btn-baja">Baja</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/operadores.js' %}"></script>
+{% endblock %}

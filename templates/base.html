@@ -21,14 +21,26 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<<<<<<< HEAD
     {% include 'includes/header.html' %}
+=======
+    {% block header %}
+        {% include 'includes/header.html' %}
+    {% endblock %}
+>>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 
     <main class="main-content">
         {% include 'includes/messages.html' %}
         {% block content %}{% endblock %}
     </main>
 
+<<<<<<< HEAD
     {% include 'includes/footer.html' %}
+=======
+    {% block footer %}
+        {% include 'includes/footer.html' %}
+    {% endblock %}
+>>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 
     <!-- Bootstrap local -->
     <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -39,3 +51,7 @@
 </body>
 </html>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20

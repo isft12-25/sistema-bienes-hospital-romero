@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ==========================
    Variables globales
 ========================== */
@@ -10,6 +11,16 @@
     --font-main: 'Inter', sans-serif;
     --font-alt: 'Blinker', sans-serif;
     --font-body: 'Open Sans', sans-serif;
+=======
+/* --- ESTILOS BASE GLOBALES --- */
+
+:root {
+    --primary-blue: #0097b2;
+    --primary-blue-dark: #007c94;
+    --primary-blue-darker: #005f73;
+    --font-inter: 'Inter', sans-serif;
+    --font-blinker: 'Blinker', sans-serif;
+>>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 }
 
 /* ==========================
@@ -22,6 +33,34 @@
 }
 
 html, body {
+<<<<<<< HEAD
+=======
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-inter);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.main-content {
+    flex: 1; /* hace que el footer quede abajo aunque no haya contenido */
+}
+
+
+/* ==========================
+   Estilos generales
+========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+>>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
     font-family: var(--font-body);
     background-color: var(--gray-light);
     color: var(--gray-dark);

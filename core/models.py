@@ -143,3 +143,7 @@ class BienPatrimonial(models.Model):
         # Representación en texto: "NroInventario - Nombre"
         return f"{self.numero_inventario} - {self.nombre}"
 
+
+
+
+

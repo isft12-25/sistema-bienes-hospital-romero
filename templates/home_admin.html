@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel Administrador - Sistema de Patrimonio{% endblock %}
+
+{# En home admin SÍ dejamos header y footer visibles #}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home_admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="page-title">Bienvenido, Administrador</h1>
+
+    <!-- Mensajes -->
+    {% include 'includes/messages.html' %}
+
+    <div class="row">
+        <!-- Card gestión de bienes -->
+        <div class="col-md-4">
+            <div class="card option-card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-box-open card-icon"></i>
+                    <h5 class="card-title">Gestión de Bienes</h5>
+                    <p class="card-text">Registrar, actualizar y dar de baja bienes patrimoniales.</p>
+                    <a href="{% url 'bienes_list' %}" class="btn btn-primary">Ir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card usuarios -->
+        <div class="col-md-4">
+            <div class="card option-card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-users card-icon"></i>
+                    <h5 class="card-title">Usuarios</h5>
+                    <p class="card-text">Administrar cuentas de usuarios del sistema.</p>
+                    <a href="{% url 'usuarios_list' %}" class="btn btn-primary">Ir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card reportes -->
+        <div class="col-md-4">
+            <div class="card option-card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line card-icon"></i>
+                    <h5 class="card-title">Reportes</h5>
+                    <p class="card-text">Generar reportes e informes patrimoniales.</p>
+                    <a href="{% url 'reportes' %}" class="btn btn-primary">Ir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home_admin.js' %}"></script>
+{% endblock %}
