@@ -59,3 +59,11 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Indica que usarás tu modelo personalizado
+AUTH_USER_MODEL = 'core.Usuario'  # Reemplaza 'tu_app' con el nombre de tu app
+
+# URLs de redirección
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/home/'
+LOGOUT_REDIRECT_URL = '/'

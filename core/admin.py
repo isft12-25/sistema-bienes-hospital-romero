@@ -7,9 +7,9 @@ from sistema_bienes.admin import custom_admin_site  # Sitio de admin personaliza
 @admin.register(Expediente, site=custom_admin_site)
 class ExpedienteAdmin(admin.ModelAdmin):
     # Columnas que se muestran en la lista de expedientes
-    list_display = ['numero_expediente', 'organismo_origen', 'numero_compra']
+    list_display = ['numero_expediente', 'organismo_origen', 'numero_compra','proveedor']
     # Campos por los que se puede buscar (incluye coincidencias parciales)
-    search_fields = ['numero_expediente', 'organismo_origen', 'numero_compra']
+    search_fields = ['numero_expediente', 'organismo_origen', 'numero_compra','proveedor']
     # Orden por defecto en la vista de lista
     ordering = ['numero_expediente']
 

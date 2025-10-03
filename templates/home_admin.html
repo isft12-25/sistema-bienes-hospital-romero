@@ -3,8 +3,6 @@
 
 {% block title %}Panel Administrador - Sistema de Patrimonio{% endblock %}
 
-{# En home admin SÍ dejamos header y footer visibles #}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home_admin.css' %}">
 {% endblock %}
@@ -24,7 +22,7 @@
                     <i class="fas fa-box-open card-icon"></i>
                     <h5 class="card-title">Gestión de Bienes</h5>
                     <p class="card-text">Registrar, actualizar y dar de baja bienes patrimoniales.</p>
-                    <a href="{% url 'bienes_list' %}" class="btn btn-primary">Ir</a>
+                    <button class="btn btn-secondary" disabled>Próximamente</button>
                 </div>
             </div>
         </div>
@@ -36,7 +34,7 @@
                     <i class="fas fa-users card-icon"></i>
                     <h5 class="card-title">Usuarios</h5>
                     <p class="card-text">Administrar cuentas de usuarios del sistema.</p>
-                    <a href="{% url 'usuarios_list' %}" class="btn btn-primary">Ir</a>
+                    <button class="btn btn-secondary" disabled>Próximamente</button>
                 </div>
             </div>
         </div>
@@ -48,10 +46,17 @@
                     <i class="fas fa-chart-line card-icon"></i>
                     <h5 class="card-title">Reportes</h5>
                     <p class="card-text">Generar reportes e informes patrimoniales.</p>
-                    <a href="{% url 'reportes' %}" class="btn btn-primary">Ir</a>
+                    <button class="btn btn-secondary" disabled>Próximamente</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Botón de cerrar sesión -->
+    <div class="text-center mt-4">
+        <a href="{% url 'logout' %}" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
     </div>
 </div>
 {% endblock %}

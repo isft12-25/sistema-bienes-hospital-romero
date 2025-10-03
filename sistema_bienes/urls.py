@@ -6,6 +6,7 @@ from .admin import custom_admin_site
 urlpatterns = [
     path('admin/', custom_admin_site.urls),  # 👈 Admin agregado
     path('', include('core.urls')),   # Tu app principal
+    
 ]
 
 # Debug Toolbar
