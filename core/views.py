@@ -67,6 +67,46 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+
+def recuperar_password(request):
+    """Vista de recuperación de contraseña"""
+    return render(request, 'recuperar_password.html')
+
+
+def registro(request):
+    """Vista de registro de usuario"""
+    return render(request, 'registro.html')
+
+
+def alta_operador(request):
+    """Vista para dar de alta un operador"""
+    return render(request, 'alta_operador.html')
+
+
+def bien_confirm_delete(request):
+    """Vista para confirmar el borrado de un bien patrimonial"""
+    return render(request, 'bien_confirm_delete.html')
+
+
+def base(request):
+    """Vista para la plantilla base"""
+    return render(request, 'base.html')
+
+
+def bienes_patrimoniales(request):
+    """Vista para mostrar bienes patrimoniales"""
+    return render(request, 'bienes.html')
+
+
+def operadores(request):
+    """Vista para mostrar operadores"""
+    return render(request, 'operadores.html')
+
+
+
+
+
+
 def logout_view(request):
     """Cerrar sesión"""
     logout(request)
