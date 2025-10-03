@@ -20,9 +20,9 @@ class BienInline(admin.TabularInline):
     model = BienPatrimonial
     extra = 0  # No mostrar filas vacías adicionales
     # Campos visibles en la tabla inline
-    fields = ['numero_inventario', 'nombre', 'tipo', 'estado', 'ubicacion_actual']
+    fields = ['numero_inventario', 'nombre', 'tipo', 'estado', 'servicios']
     # Todos los campos solo lectura (visualización sin edición)
-    readonly_fields = ['numero_inventario', 'nombre', 'tipo', 'estado', 'ubicacion_actual']
+    readonly_fields = ['numero_inventario', 'nombre', 'tipo', 'estado', 'servicios']
     can_delete = False  # Evita borrar bienes desde el inline
 
 # Nota: si querés habilitar el inline en la vista de Expediente, agregá:
@@ -34,7 +34,7 @@ class BienInline(admin.TabularInline):
 class BienPatrimonialAdmin(admin.ModelAdmin):
     # Columnas visibles en la lista de bienes para una vista rápida y útil
     list_display = [
-        'numero_inventario', 'nombre', 'tipo', 'ubicacion_actual', 'estado',
+        'numero_inventario', 'nombre', 'tipo', 'servicios', 'estado',
         'expediente', 'origen', 'valor_adquisicion'
     ]
     # Filtros laterales para segmentar resultados
@@ -43,7 +43,7 @@ class BienPatrimonialAdmin(admin.ModelAdmin):
     # Ojo con 'expediente__numero_expediente': uso de doble guion bajo para buscar por campo de FK
     search_fields = [
         'numero_inventario', 'nombre', 'descripcion',
-        'numero_identificacion', 'ubicacion_actual',
+        'numero_identificacion', 'servicios',
         'expediente__numero_expediente'
     ]
     # Campos que no se pueden editar manualmente (se llenan automáticamente)

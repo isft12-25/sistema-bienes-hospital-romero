@@ -96,7 +96,7 @@ class BienPatrimonial(models.Model):
     )
 
     # Ubicación física actual (servicio/dependencia) y responsable
-    ubicacion_actual = models.CharField(max_length=200)
+    servicios = models.CharField(max_length=200)
     responsable = models.CharField(max_length=200)
     # Estado actual del bien (usa ESTADO_CHOICES; por defecto ACTIVO)
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='ACTIVO')
