@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* ==========================
    Variables globales
 ========================== */
@@ -26,93 +27,216 @@
 /* ==========================
    Estilos generales
 ========================== */
+=======
+/* --- Reset y tipografía --- */
+>>>>>>> 025d3608897be9129cc58de13b5db1c8dc2d1282
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+<<<<<<< HEAD
 }
 
 html, body {
 <<<<<<< HEAD
 =======
     height: 100%;
+=======
+    font-family: Arial, Helvetica, sans-serif;
+>>>>>>> 025d3608897be9129cc58de13b5db1c8dc2d1282
 }
 
 body {
-    font-family: var(--font-inter);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: white;
 }
 
-main.main-content {
-    flex: 1; /* hace que el footer quede abajo aunque no haya contenido */
+/* -------- Barra superior -------- */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #fff;
+    border-bottom: 1px solid #00a4c6;
+    height: 70px;
 }
 
-
-/* ==========================
-   Estilos generales
-========================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
+<<<<<<< HEAD
 html, body {
 >>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
     font-family: var(--font-body);
     background-color: var(--gray-light);
     color: var(--gray-dark);
     min-height: 100vh;
+=======
+.logo {
+    width: 55px;
+    height: 55px;
+>>>>>>> 025d3608897be9129cc58de13b5db1c8dc2d1282
 }
 
-/* ==========================
-   Header y Footer
-========================== */
-header, .main-header, .top-bar {
-    background-color: var(--primary-blue);
-    color: white;
-    padding: 0.8rem 1rem;
+.system-title {
+    font-size: 18px;
+    font-weight: 700;
+    color:#000000;
 }
 
-footer, .main-footer {
-    background-color: var(--primary-blue-darker);
-    color: white;
-    padding: 1rem;
-    text-align: center;
+.icons-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
-/* ==========================
-   Botones globales
-========================== */
-button {
-    border: none;
-    border-radius: 6px;
-    padding: 0.7rem 1.2rem;
-    font-size: 1rem;
-    font-family: var(--font-main);
+.material-symbols-outlined {
+    font-size: 28px;
+    color: #0087a3;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: color 0.3s ease;
 }
 
-button:hover {
-    filter: brightness(0.9);
+.material-symbols-outlined:hover {
+    color: #006e87;
 }
 
-/* ==========================
-   Formularios
-========================== */
-input, select {
-    border: 1px solid var(--gray-dark);
-    border-radius: 4px;
-    padding: 0.5rem;
-    font-family: var(--font-body);
+/* -------- Contenedor principal -------- */
+.main-container {
+    display: flex;
+    flex: 1;
+}
+
+/* -------- Panel lateral -------- */
+.left-panel {
+    width: 280px;
+    background-color: #00a4c6;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0;
+}
+
+.panel-image {
     width: 100%;
+    height: auto;
 }
 
-label {
+/* -------- Área central -------- */
+.home-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    padding: 40px;
+}
+
+/* -------- Botones principales -------- */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    width: 400px;
+    align-items: center;
+}
+
+.menu-button {
+    background-color: #00a4c6;
+    color: #000; /* TEXTO NEGRO */
+    padding: 18px;
+    border: none;
+    border-radius: 30px; /* redondeado como en la foto */
+    font-size: 18px;
     font-weight: 600;
-    margin-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    text-decoration: none;
     display: block;
+}
+
+.menu-button:hover {
+    background-color: #0092b3;
+    transform: translateY(-2px);
+    color: #000;
+    text-decoration: none;
+}
+
+/* -------- Footer vacío -------- */
+.footer {
+    height: 20px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+}
+
+/* -------- Responsive Design -------- */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .left-panel {
+        width: 100%;
+        height: auto;
+    }
+
+    .home-content {
+        padding: 20px;
+    }
+
+    .menu-buttons {
+        width: 80%;
+        gap: 25px;
+    }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto;
+        gap: 10px;
+    }
+
+    .logo {
+        width: 45px;
+        height: 45px;
+    }
+
+    .system-title {
+        font-size: 16px;
+    }
+
+    .icons-container {
+        align-self: flex-end;
+    }
+
+    .left-panel {
+        display: none; /* Ocultar panel lateral en móviles */
+    }
+
+    .menu-buttons {
+        width: 100%;
+        gap: 20px;
+    }
+
+    .menu-button {
+        font-size: 16px;
+        padding: 14px;
+        border-radius: 20px;
+    }
 }

@@ -1,15 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Elementos del DOM
-    const adminBtn = document.getElementById('admin-btn');
-    const userBtn = document.getElementById('user-btn');
+    // Delegación de eventos para manejar botones dinámicos
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'admin-btn' || e.target.closest('#admin-btn')) {
+            handleButtonClick('admin', e.target);
+        } else if (e.target.id === 'user-btn' || e.target.closest('#user-btn')) {
+            handleButtonClick('user', e.target);
+        }
+    });
 
-    // Función para simular la redirección al login
-    function redirectToLogin(userType) {
-        const button = userType === 'admin' ? adminBtn : userBtn;
+    // Función para manejar el clic en los botones
+    function handleButtonClick(userType, button) {
         const originalText = button.innerHTML;
-
+        
         button.classList.add('loading');
         button.disabled = true;
+        button.innerHTML = 'Cargando...';
 
         setTimeout(() => {
             alert(`Redirigiendo al login de ${userType === 'admin' ? 'Administrador' : 'Usuario'}`);
@@ -19,28 +24,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1500);
     }
 
-    // Eventos para los botones
-    adminBtn.addEventListener('click', function() {
-        this.innerHTML = 'Cargando...';
-        redirectToLogin('admin');
-    });
-
-    userBtn.addEventListener('click', function() {
-        this.innerHTML = 'Cargando...';
-        redirectToLogin('user');
-    });
-
     // Efectos de hover mejorados
-    const buttons = document.querySelectorAll('.login-button');
-    buttons.forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
-            this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
-        });
+    document.addEventListener('mouseover', function(e) {
+        if (e.target.classList.contains('login-button')) {
+            e.target.style.transform = 'translateY(-3px)';
+            e.target.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+        }
+    });
 
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '2px 3px 4px rgba(0, 0, 0, 0.2)';
-        });
+    document.addEventListener('mouseout', function(e) {
+        if (e.target.classList.contains('login-button')) {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '2px 3px 4px rgba(0, 0, 0, 0.2)';
+        }
     });
 });

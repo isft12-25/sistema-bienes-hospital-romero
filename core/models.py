@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+
 
 
 # Modelo para registrar datos básicos de un expediente (trámite/compra/origen)
@@ -94,7 +96,7 @@ class BienPatrimonial(models.Model):
     )
 
     # Ubicación física actual (servicio/dependencia) y responsable
-    ubicacion_actual = models.CharField(max_length=200)
+    servicios = models.CharField(max_length=200)
     responsable = models.CharField(max_length=200)
     # Estado actual del bien (usa ESTADO_CHOICES; por defecto ACTIVO)
     estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='ACTIVO')
@@ -143,7 +145,40 @@ class BienPatrimonial(models.Model):
         # Representación en texto: "NroInventario - Nombre"
         return f"{self.numero_inventario} - {self.nombre}"
 
-
-
-
+class Usuario(AbstractUser):
+    TIPO_USUARIO = [
+        ('admin', 'Administrador'),
+        ('empleado', 'Empleado Hospital'),
+    ]
+    
+    tipo_usuario = models.CharField(
+        max_length=10,
+        choices=TIPO_USUARIO,
+        default='empleado'
+    )
+    
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='grupos',
+        blank=True,
+        help_text='Los grupos a los que pertenece este usuario.',
+        related_name='usuarios_custom',  
+        related_query_name='usuario_custom',
+    )
+    
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='permisos de usuario',
+        blank=True,
+        help_text='Permisos específicos para este usuario.',
+        related_name='usuarios_custom', 
+        related_query_name='usuario_custom',
+    )
+    
+    class Meta:
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
+    
+    def __str__(self):
+        return f"{self.username} ({self.get_tipo_usuario_display()})"
 

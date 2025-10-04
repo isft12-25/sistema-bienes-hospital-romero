@@ -179,10 +179,9 @@ pip install -r requirements/development.txt
 ```bash
 # 1. Copiar archivo de entorno según rol
 # Para BACK y FRONT:
-cp .env.development .env
+cp enviroment/env_development .env
 # Para TESTING:
-cp .env.testing .env
-
+cp enviroment/env_testing .env
 # 2. Verificar que el archivo .env existe
 ls -la .env
 ```
@@ -270,9 +269,9 @@ pip install -r requirements/development.txt
 ```bash
 # 1. Copiar archivo de entorno según rol
 # Para BACK y FRONT:
-cp .env.development .env
+cp enviroment\env_development .env
 # Para TESTING:
-cp .env.testing .env
+cp enviroment\env_testing .env
 
 # 2. Verificar que el archivo .env existe
 ls -la .env
