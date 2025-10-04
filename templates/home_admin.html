@@ -1,64 +1,45 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Panel Administrador - Sistema de Patrimonio{% endblock %}
+{% block title %}Dashboard - Sistema de Gestión de Bienes Patrimoniales{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/home_admin.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="page-title">Bienvenido, Administrador</h1>
-
-    <!-- Mensajes -->
-    {% include 'includes/messages.html' %}
-
-    <div class="row">
-        <!-- Card gestión de bienes -->
-        <div class="col-md-4">
-            <div class="card option-card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="fas fa-box-open card-icon"></i>
-                    <h5 class="card-title">Gestión de Bienes</h5>
-                    <p class="card-text">Registrar, actualizar y dar de baja bienes patrimoniales.</p>
-                    <button class="btn btn-secondary" disabled>Próximamente</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card usuarios -->
-        <div class="col-md-4">
-            <div class="card option-card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="fas fa-users card-icon"></i>
-                    <h5 class="card-title">Usuarios</h5>
-                    <p class="card-text">Administrar cuentas de usuarios del sistema.</p>
-                    <button class="btn btn-secondary" disabled>Próximamente</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card reportes -->
-        <div class="col-md-4">
-            <div class="card option-card shadow-sm">
-                <div class="card-body text-center">
-                    <i class="fas fa-chart-line card-icon"></i>
-                    <h5 class="card-title">Reportes</h5>
-                    <p class="card-text">Generar reportes e informes patrimoniales.</p>
-                    <button class="btn btn-secondary" disabled>Próximamente</button>
-                </div>
-            </div>
-        </div>
+<!-- Barra superior -->
+<header class="top-bar">
+    <div class="logo-container">
+        <img src="{% static 'img/logo.png' %}" alt="Logo Hospital" class="logo">
+        <span class="system-title">Sistema de Gestión de Bienes Patrimoniales</span>
     </div>
-
-    <!-- Botón de cerrar sesión -->
-    <div class="text-center mt-4">
-        <a href="{% url 'logout' %}" class="btn btn-danger">
-            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-        </a>
+    <div class="icons-container">
+        <span class="material-symbols-outlined" title="Notificaciones">notifications</span>
+        <a href="{% url 'logout' %}" class="material-symbols-outlined" title="Cerrar sesión">logout</a>
     </div>
-</div>
+</header>
+
+<!-- Contenedor principal -->
+<main class="main-container">
+    <!-- Panel lateral izquierdo -->
+    <aside class="left-panel">
+        <img src="{% static 'img/diseño-izquierda.png' %}" alt="Gobierno de Buenos Aires" class="panel-image">
+    </aside>
+
+    <!-- Área central -->
+    <section class="home-content">
+        <div class="menu-buttons">
+            <a href="{% url 'bienes' %}" class="menu-button" id="btn-bienes">BIENES</a>
+            <a href="{% url 'operadores' %}" class="menu-button" id="btn-operadores">ASIGNAR Y GESTIONAR OPERADORES</a>
+            <button class="menu-button" id="btn-perfil">PERFIL</button>
+        </div>
+    </section>
+</main>
+
+<!-- Footer vacío -->
+<footer class="footer"></footer>
 {% endblock %}
 
 {% block extra_js %}

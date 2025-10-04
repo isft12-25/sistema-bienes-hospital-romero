@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Administrador - Sistema de Gestión{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin-styles.css' %}">
+{% endblock %}
+
+{% block content %}
+  <!-- Panel lateral -->
+  <aside class="sidebar">
+    <div class="admin-info">
+      <div class="admin-avatar"></div>
+      <div class="datos-admin">
+        <p class="admin-title"><strong>Administrador:</strong></p>
+        <p class="admin-name"><strong>CECILIA</strong></p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Área central con formulario -->
+  <section class="admin-content">
+    <form id="form-admin" class="form-admin">
+      <div class="form-section">
+        <h3 class="section-title">Datos del administrador</h3>
+
+        <div class="form-group-item">
+          <label for="admin-nombre">Nombre del operador:</label>
+          <input type="text" id="admin-nombre" name="admin-nombre">
+        </div>
+
+        <div class="form-group-item">
+          <label for="admin-apellido">Nombres y Apellido:</label>
+          <input type="text" id="admin-apellido" name="admin-apellido">
+        </div>
+
+        <div class="flex-group-complex">
+          <div class="horizontal-item">
+            <label for="admin-pais">País y tipo de Doc:</label>
+            <select id="admin-pais" name="admin-pais">
+              <option value="Argentina">Argentina</option>
+            </select>
+          </div>
+          <div class="horizontal-item dni-item">
+            <label for="admin-dni">DNI:</label>
+            <input type="number" id="admin-dni" name="admin-dni">
+          </div>
+        </div>
+
+        <div class="form-group-item">
+          <label for="admin-numero-doc">Número de Documento:</label>
+          <input type="text" id="admin-numero-doc" name="admin-numero-doc">
+        </div>
+
+        <div class="form-group-item">
+          <label for="admin-email">Email:</label>
+          <input type="email" id="admin-email" name="admin-email">
+        </div>
+
+        <div class="form-group-item">
+          <label for="admin-cel">Cel:</label>
+          <input type="text" id="admin-cel" name="admin-cel">
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="form-buttons">
+        <button type="button" class="btn-cancelar">Cancelar</button>
+        <button type="button" class="btn-modificar">Modificar</button>
+        <button type="submit" class="btn-guardar">Guardar</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %}
