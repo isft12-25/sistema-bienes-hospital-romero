@@ -138,3 +138,9 @@ def home_empleado(request):
 def recuperar_password(request):
     """Vista de recuperación de contraseña"""
     return render(request, 'recuperar_password.html')
+
+def alta_operadores(request):
+    return render(request, 'alta_operadores.html')
+
+def reportes_view(request):
+    return render(request, 'reportes.html')
