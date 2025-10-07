@@ -1,30 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<<<<<<< HEAD
-{% block title %}Inicio - Sistema de Gestión de Patrimonio{% endblock %}
-=======
 {% block title %}Inicio - Sistema de Patrimonio{% endblock %}
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/inicio.css' %}">
 {% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-<div class="inicio-container">
-    <img src="{% static 'img/lateral-izquierda.png' %}" alt="Decoración izquierda" class="lateral izquierda">
-    <img src="{% static 'img/lateral-derecha.png' %}" alt="Decoración derecha" class="lateral derecha">
-
-    <div class="inicio-box">
-        <h1 class="title">Sistema<br>Gestión de Patrimonio</h1>
-        <p class="subtitle">Inicia sesión como</p>
-        <div class="login-options">
-            <a href="{% url 'login' %}" class="login-button"><i class="fas fa-user-cog"></i> Administrador</a>
-            <a href="{% url 'login' %}" class="login-button"><i class="fas fa-user"></i> Usuario</a>
-        </div>
-=======
 <!-- Fondos laterales -->
 <img src="{% static 'img/lateral-izquierda.png' %}" alt="Decoración izquierda" class="lateral izquierda">
 <img src="{% static 'img/lateral-derecha.png' %}" alt="Decoración derecha" class="lateral derecha">
@@ -46,7 +29,6 @@
         <button class="login-button" id="user-btn">
             <i class="fas fa-user"></i> Usuario
         </button>
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
     </div>
 </div>
 {% endblock %}

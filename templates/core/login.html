@@ -8,48 +8,6 @@
 {% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-<div class="login-background">
-    <div class="container">
-        <div class="login-box">
-            <div class="header">
-                <img src="{% static 'img/logo.png' %}" alt="Logo Hospital Dr. Alejandro Korn">
-                <div class="title">
-                    <h1>Sistema</h1>
-                    <h2>Gestión de Patrimonio</h2>
-                </div>
-            </div>
-
-            <form id="loginForm" method="post">
-                {% csrf_token %}
-                <div class="input-group">
-                    <label for="usuario">Usuario</label>
-                    <div class="input-field">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="usuario" name="usuario" autocomplete="username" required>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="contrasena">Contraseña</label>
-                    <div class="input-field">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="contrasena" name="contrasena" autocomplete="current-password" required>
-                    </div>
-                </div>
-
-                <div class="error-message" id="loginError">El Usuario y/o Contraseña es incorrecto</div>
-
-                <a href="{% url 'recuperar_password' %}" class="forgot-password">Olvidé mi Contraseña</a>
-                <button type="submit" class="login-button" id="loginButton">
-                    <span class="spinner"></span>
-                    <span class="button-text">Iniciar Sesión</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-=======
 <!-- Header superior -->
 <div class="header-bar"></div>
 
@@ -97,13 +55,8 @@
 
 <!-- Footer inferior -->
 <div class="footer-bar"></div>
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/login.js' %}"></script>
 {% endblock %}
-<<<<<<< HEAD
-=======
-
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
