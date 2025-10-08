@@ -93,7 +93,7 @@ def base(request):
     return render(request, 'base.html')
 
 
-def bienes_patrimoniales(request):
+def bienes(request):
     """Vista para mostrar bienes patrimoniales"""
     return render(request, 'bienes.html')
 
