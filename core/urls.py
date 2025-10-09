@@ -15,7 +15,7 @@ urlpatterns = [
 
     # Bienes
     path('bien_confirm_delete/', views.bien_confirm_delete, name='bien_confirm_delete'),
-    path('bienes.html', views.bienes_patrimoniales, name='bienes'),
+    path('bienes.html', views.bienes, name='bienes'),
 
     # Base / Reportes (si existen en views.py)
     path('base.html', views.base, name='base'),
