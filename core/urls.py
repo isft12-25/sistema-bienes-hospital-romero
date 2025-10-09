@@ -7,10 +7,17 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
     path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
-    path('home_admin/', views.home_admin, name='home_admin'),  # 👈 Ruta para el dashboard
-    path('alta_operador/', views.alta_operador, name='alta_operador'), #Reemplazo de home_empleado
+
+    # Admin / Operadores
+    path('home_admin/', views.home_admin, name='home_admin'),
+    path('alta_operador/', views.alta_operador, name='alta_operador'),
+    path('operadores.html', views.operadores, name='operadores'),
+
+    # Bienes
     path('bien_confirm_delete/', views.bien_confirm_delete, name='bien_confirm_delete'),
-    path('base.html', views.base, name='base'),
     path('bienes.html', views.bienes_patrimoniales, name='bienes'),
-    path('operadores.html', views.operadores, name='operadores')  # 👈 Ruta para el dashboard
+
+    # Base / Reportes (si existen en views.py)
+    path('base.html', views.base, name='base'),
+    path('reportes/', views.reportes_view, name='reportes'),
 ]

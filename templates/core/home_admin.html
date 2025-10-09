@@ -1,54 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<<<<<<< HEAD
-{% block title %}Dashboard - Sistema de Gestión de Bienes Patrimoniales{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<!-- Iconos Material Design local -->
-<link rel="stylesheet" href="{% static 'libs/material-icons/material-symbols.css' %}">
-{% endblock %}
-
-{% block content %}
-<!-- Barra superior -->
-<header class="top-bar">
-    <div class="logo-container">
-        <img src="{% static 'img/logo.png' %}" alt="Logo Hospital" class="logo">
-        <span class="system-title">Sistema de Gestión de Bienes Patrimoniales</span>
-    </div>
-    <div class="icons-container">
-        <span class="material-symbols-outlined" title="Notificaciones">notifications</span>
-        <span class="material-symbols-outlined" title="Cerrar sesión">logout</span>
-    </div>
-</header>
-
-<!-- Contenedor principal -->
-<main class="main-container">
-    <!-- Panel lateral izquierdo -->
-    <aside class="left-panel">
-        <img src="{% static 'img/diseño-izquierda.png' %}" alt="Gobierno de Buenos Aires" class="panel-image">
-    </aside>
-
-    <!-- Área central -->
-    <section class="home-content">
-        <div class="menu-buttons">
-            <button class="menu-button" id="btn-bienes">BIENES</button>
-            <button class="menu-button" id="btn-operadores">ASIGNAR Y GESTIONAR OPERADORES</button>
-            <button class="menu-button" id="btn-perfil">PERFIL</button>
-        </div>
-    </section>
-</main>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
-{% endblock %}
-
-
-{% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
-=======
 {% block title %}Dashboard - Administrador{% endblock %}
 
 {% block extra_css %}
@@ -150,5 +102,4 @@
 
 {% block extra_js %}
 <script src="{% static 'js/home-admin.js' %}"></script>
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
 {% endblock %}

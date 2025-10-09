@@ -93,7 +93,7 @@ def base(request):
     return render(request, 'base.html')
 
 
-def bienes_patrimoniales(request):
+def bienes(request):
     """Vista para mostrar bienes patrimoniales"""
     return render(request, 'bienes.html')
 
@@ -138,3 +138,9 @@ def home_empleado(request):
 def recuperar_password(request):
     """Vista de recuperación de contraseña"""
     return render(request, 'recuperar_password.html')
+
+def alta_operadores(request):
+    return render(request, 'alta_operadores.html')
+
+def reportes_view(request):
+    return render(request, 'reportes.html')

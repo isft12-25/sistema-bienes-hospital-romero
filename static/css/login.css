@@ -1,80 +1,3 @@
-<<<<<<< HEAD
-/* --- ESTILOS ESPECÍFICOS PARA PÁGINA DE LOGIN --- */
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-
-    /* Imágenes laterales - ACTUALIZAR CON {% static %} */
-    background-image: url('../img/patron_izquierda.png'), url('../img/patron_derecha.png');
-    background-repeat: no-repeat, no-repeat;
-    background-position: left center, right center;
-    background-size: 28%, 28%;
-}
-
-/* Header y Footer */
-.header-bar, .footer-bar {
-    width: 100%;
-    height: 25px;
-    background-color: var(--primary-blue);
-}
-
-/* Contenedor principal */
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    flex: 1;
-    padding: 20px;
-}
-
-/* Caja de login */
-.login-box {
-    background-color: #fff;
-    padding: 40px 50px;
-    border-radius: 10px;
-    border: 1.5px solid #ccc;
-    box-shadow: none;
-    text-align: center;
-    width: 350px;
-    transition: all 0.3s ease;
-}
-
-/* Logo y títulos */
-.header {
-    margin-bottom: 25px;
-}
-
-.header img {
-    width: 120px;
-    margin-bottom: 10px;
-}
-
-.title h1 {
-    font-size: 1.6em;
-    color: #000;
-    margin: 0;
-    font-weight: bold;
-}
-
-.title h2 {
-    font-size: 1.2em;
-    color: #333;
-    margin: 0;
-    font-weight: normal;
-}
-
-/* Campos del formulario */
-.input-group {
-    margin-bottom: 20px;
-=======
 .main-content {
     display: flex;
     align-items: center;
@@ -104,141 +27,38 @@ body {
 .title {
     font-size: 1.5rem;
     font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #555;
     margin-bottom: 1.5rem;
 }
 
-.input-group {
+.login-options {
+    margin-top: 1rem;
+}
+
+.login-button {
+    display: block;
+    width: 100%;
     margin-bottom: 1rem;
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
-    text-align: left;
-}
-
-.input-group label {
-<<<<<<< HEAD
-    display: block;
-    margin-bottom: 5px;
-    color: #555;
-=======
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-    display: block;
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
-}
-
-.input-field {
-    display: flex;
-    align-items: center;
-<<<<<<< HEAD
-    border: 1.5px solid #000;
-    border-radius: 20px;
-    padding: 8px 12px;
-    background-color: #fff;
-    transition: border-color 0.3s ease;
-}
-
-.input-field.error {
-    border-color: #e74c3c;
-}
-
-.input-field i {
-    color: #333;
-    margin-right: 10px;
-=======
-    border: 1px solid #aaa;
+    padding: 10px;
+    border: 2px solid #0097a7;
     border-radius: 8px;
-    padding: 0.5rem;
-    background: #fff;
-}
-
-.input-field i {
-    margin-right: 0.5rem;
-    color: #0097a7;
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
-}
-
-.input-field input {
-    border: none;
-    outline: none;
-<<<<<<< HEAD
-    width: 100%;
-    font-size: 1em;
-    background: transparent;
-}
-
-/* Link de olvidé contraseña */
-.forgot-password {
-    display: block;
-    text-align: left;
-    font-size: 0.9em;
+    background: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
     color: #000;
-    text-decoration: none;
-    margin-bottom: 20px;
+    text-align: center;
 }
-
-.forgot-password:hover {
-    text-decoration: underline;
-}
-
-/* Botón de login */
-.login-button {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--primary-blue);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    position: relative;
-}
-
 .login-button:hover {
-    background-color: var(--primary-blue-dark);
-}
-
-.login-button:disabled {
-    background-color: #81d4e2;
-    cursor: not-allowed;
-}
-
-/* Mensaje de error */
-.error-message {
-    color: #e74c3c;
-    font-size: 0.9em;
-    margin-top: 5px;
-    text-align: left;
-    display: none;
-}
-=======
-    flex: 1;
-    font-size: 1rem;
-}
-
-.forgot-password {
-    display: block;
-    margin: 0.8rem 0;
-    color: #0097a7;
-    font-size: 0.9rem;
-    text-decoration: none;
-    text-align: right;
-}
-.forgot-password:hover { text-decoration: underline; }
-
-.login-button {
-    width: 100%;
-    padding: 0.8rem;
-    border-radius: 8px;
-    border: none;
-    background-color: #0097a7;
+    background: #0097a7;
     color: white;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
 }
-.login-button:hover { background-color: #007c8a; }
 
 .lateral {
     position: absolute;
@@ -250,103 +70,3 @@ body {
 .izquierda { left: 0; }
 .derecha { right: 0; }
 
-/* Mensajes de alerta */
-.messages-container {
-    margin-bottom: 20px;
-}
-
-.alert {
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-family: var(--font-blinker);
-    font-size: 15px;
-    text-align: center;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.alert-warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-}
-
-<<<<<<< HEAD
->>>>>>> d3a3fd8fbbadc8fa7b9dc0494193b2dbe96a2e20
-=======
-.alert-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-/* Input groups */
-.input-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    font-family: var(--font-inter);
-    font-weight: 600;
-    font-size: 14px;
-    color: #000;
-    margin-bottom: 8px;
-}
-
-.input-field {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-field i {
-    position: absolute;
-    left: 12px;
-    color: #666;
-    font-size: 16px;
-}
-
-.input-field input {
-    width: 100%;
-    height: 45px;
-    padding-left: 40px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-family: var(--font-inter);
-    font-size: 15px;
-    transition: border-color 0.3s ease;
-}
-
-.input-field input:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-}
-
-/* Link olvidé contraseña */
-.forgot-password {
-    display: block;
-    text-align: right;
-    font-family: var(--font-blinker);
-    font-size: 14px;
-    color: var(--primary-blue);
-    text-decoration: none;
-    margin: 15px 0 25px;
-}
-
-.forgot-password:hover {
-    text-decoration: underline;
-}
->>>>>>> 025d3608897be9129cc58de13b5db1c8dc2d1282
