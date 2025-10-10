@@ -2,11 +2,14 @@
 from django.contrib.auth import authenticate, login, logout
 import pandas as pd
 from datetime import date
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import CargaMasivaForm
 from .models import BienPatrimonial
+from django.db.models import Q
+from django.http import HttpResponse
+from .forms import BienPatrimonialForm
 
 def inicio(request):
     """
@@ -183,29 +186,64 @@ def reportes_view(request):
 
 @login_required
 def lista_bienes(request):
-    bienes = BienPatrimonial.objects.all().order_by('-fecha_adquisicion', 'nombre')[:500]
-    return render(request, 'bienes/lista_bienes.html', {'bienes': bienes})
+    q = (request.GET.get("q") or "").strip()
+
+    bienes = (
+        BienPatrimonial.objects
+        .select_related("expediente")        # para usar expediente.numero_expediente / numero_compra
+        .order_by("clave_unica")
+    )
+
+    if q:
+        bienes = bienes.filter(
+            Q(clave_unica__icontains=q) |
+            Q(nombre__icontains=q) |
+            Q(descripcion__icontains=q) |
+            Q(numero_identificacion__icontains=q) |
+            Q(servicios__icontains=q) |
+            Q(cuenta_codigo__icontains=q) |
+            Q(nomenclatura_bienes__icontains=q) |
+            Q(numero_serie__icontains=q) |
+            Q(origen__icontains=q) |
+            Q(estado__icontains=q) |
+            Q(expediente__numero_expediente__icontains=q) |
+            Q(expediente__numero_compra__icontains=q)
+        )
+
+    return render(
+        request,
+        "bienes/lista_bienes.html",
+        {"bienes": bienes, "q": q}
+    )
+def editar_bien(request, pk):
+    bien = get_object_or_404(BienPatrimonial, pk=pk)
+
+    if request.method == 'POST':
+        form = BienPatrimonialForm(request.POST, instance=bien)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bien patrimonial actualizado correctamente.")
+            return redirect('lista_bienes')
+    else:
+        form = BienPatrimonialForm(instance=bien)
+
+    return render(request, 'bienes/editar_bien.html', {'form': form, 'bien': bien})
+
+
+
+
+def eliminar_bien(request, pk): 
+
+    bien = get_object_or_404(BienPatrimonial, pk=pk)
+    bien.delete()
+    messages.success(request, "Bien eliminado correctamente.")
+    return redirect('lista_bienes')
+
+
+
 
 @login_required
 def carga_masiva_bienes(request):
-    """
-    Carga masiva desde Excel → TU modelo actual.
-    Mapeo:
-      - id_patrimonial -> numero_identificacion
-      - descripcion -> descripcion
-      - marca -> marca
-      - modelo -> modelo
-      - numero_serie -> numero_serie
-      - cantidad -> cantidad (default=1)
-      - sector -> servicios
-    Completa:
-      - nombre: primeros 80 chars de descripcion (o modelo/marca/serie o 'SIN NOMBRE')
-      - fecha_adquisicion: hoy
-      - origen: 'OMISION'
-      - estado: 'ACTIVO'
-      - valor_adquisicion: 0
-    Update-or-create por numero_identificacion si existe; si no, por (numero_serie + descripcion).
-    """
     if request.method == 'POST':
         form = CargaMasivaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -290,6 +328,4 @@ def carga_masiva_bienes(request):
     else:
         form = CargaMasivaForm()
 
-    return render(request, 'carga_masiva.html', {'form': form})
-
-
+    return render(request, 'carga_masiva.html', {'form': form}) 

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.http import HttpResponse
 
 urlpatterns = [
     path('', views.inicio, name='inicio'),
@@ -16,4 +17,6 @@ urlpatterns = [
     path('reportes/', views.reportes_view, name='reportes'),
     path('lista-bienes/', views.lista_bienes, name='lista_bienes'),
     path('carga-masiva/', views.carga_masiva_bienes, name='carga_masiva'),
+    path('bienes/<int:pk>/editar/', views.editar_bien, name='editar_bien'),
+    path('bienes/<int:pk>/eliminar/', views.eliminar_bien, name='eliminar_bien'),
 ]

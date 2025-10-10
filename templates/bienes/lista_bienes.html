@@ -1,41 +1,107 @@
-{% extends 'base.html' %}
-{% block title %}Bienes{% endblock %}
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Bienes Patrimoniales{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Bienes Patrimoniales</h2>
-    <a class="btn btn-primary" href="{% url 'carga_masiva' %}">
-      <i class="fas fa-upload"></i> Carga masiva
-    </a>
-  </div>
+<div class="container-fluid py-3">
 
+  <!-- Barra de búsqueda -->
+  <form method="get" class="row g-2 align-items-center mb-3">
+    <div class="col-md-6">
+      <input
+        type="search"
+        name="q"
+        value="{{ q }}"
+        class="form-control"
+        placeholder="Buscar...">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-search me-1"></i> Buscar
+      </button>
+    </div>
+    <div class="col-auto">
+      <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">
+        Limpiar
+      </a>
+    </div>
+    <div class="col-12 mt-2 text-muted">
+      {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
+      Total: {{ bienes|length }}
+    </div>
+  </form>
+
+  <!-- Tabla de bienes (columnas según la imagen) -->
   <div class="table-responsive">
-    <table class="table table-sm table-striped align-middle">
-      <thead>
+    <table class="table table-sm table-bordered align-middle">
+      <thead class="table-light text-center">
         <tr>
-          <th>Clave</th>
+          <th>Clave Única</th>
           <th>Nombre</th>
-          <th>ID</th>
-          <th>Serie</th>
-          <th>Servicios</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>N° de Expediente</th>
+          <th>N° de Compra</th>
+          <th>Cuenta Código</th>
+          <th>Nomenclatura de Bienes</th>
+          <th>Fecha de Alta</th>
+          <th>Origen</th>
           <th>Estado</th>
-          <th>Fecha Alta</th>
+          <th>N° de Serie</th>
+          <th>Precio</th>
+          <th>N° de ID</th>
+          <th>Servicios</th>
+          <th class="text-nowrap">Editar</th>
+          <th class="text-nowrap">Eliminar</th>
         </tr>
       </thead>
       <tbody>
         {% for b in bienes %}
-          <tr>
-            <td>{{ b.clave_unica }}</td>
-            <td>{{ b.nombre }}</td>
-            <td>{{ b.numero_identificacion }}</td>
-            <td>{{ b.numero_serie }}</td>
-            <td>{{ b.servicios }}</td>
-            <td>{{ b.estado }}</td>
-            <td>{{ b.fecha_adquisicion }}</td>
-          </tr>
+        <tr>
+          <td class="text-nowrap">{{ b.clave_unica }}</td>
+          <td>{{ b.nombre }}</td>
+          <td style="min-width: 260px;">{{ b.descripcion }}</td>
+          <td class="text-center">{{ b.cantidad }}</td>
+          <td class="text-nowrap">
+            {{ b.expediente.numero_expediente|default:"—" }}
+          </td>
+          <td class="text-nowrap">
+            {{ b.expediente.numero_compra|default:"—" }}
+          </td>
+          <td class="text-nowrap">{{ b.cuenta_codigo|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.nomenclatura_bienes|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.fecha_adquisicion|date:"d/m/Y" }}</td>
+          <td class="text-nowrap">{{ b.get_origen_display|default:b.origen }}</td>
+          <td class="text-nowrap">{{ b.get_estado_display|default:b.estado }}</td>
+          <td class="text-nowrap">{{ b.numero_serie|default:"—" }}</td>
+          <td class="text-end">
+            {% if b.valor_adquisicion %}${{ b.valor_adquisicion|floatformat:0|intcomma }}{% else %}—{% endif %}
+          </td>
+          <td class="text-nowrap">{{ b.numero_identificacion|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.servicios }}</td>
+
+          <!-- Acciones (ajustá los nombres de URL si ya tenés otros) -->
+          <td class="text-center">
+            <a class="btn btn-sm btn-info" href="{% url 'editar_bien' b.pk %}">
+              <i class="fas fa-pen"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a class="btn btn-sm btn-danger"
+               href="{% url 'eliminar_bien' b.pk %}"
+               onclick="return confirm('¿Eliminar este bien?');">
+              <i class="fas fa-trash"></i>
+            </a>
+          </td>
+        </tr>
         {% empty %}
-          <tr><td colspan="7" class="text-center">Sin registros</td></tr>
+        <tr>
+          <td colspan="17" class="text-center text-muted py-4">
+            No hay bienes para mostrar.
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
