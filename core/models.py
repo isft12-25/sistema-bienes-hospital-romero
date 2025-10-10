@@ -39,15 +39,6 @@ class BienPatrimonial(models.Model):
         ('BAJA', 'Dado de baja'),
     )
 
-    # Tipos generales de bienes (clasificación contable/física)
-    TIPO_CHOICES = (
-        ('EQUIPO_MEDICO', 'Equipo Médico'),
-        ('INFORMATICA', 'Equipo Informático'),
-        ('MOBILIARIO', 'Mobiliario'),
-        ('VEHICULO', 'Vehículo'),
-        ('OTRO', 'Otro'),
-    )
-
     # Origen del bien (cómo ingresó al patrimonio)
     ORIGEN_CHOICES = (
         ('DONACION', 'Donación'),
@@ -63,8 +54,6 @@ class BienPatrimonial(models.Model):
     # Descripción detallada
     descripcion = models.TextField()
     # Tipo/clasificación del bien (usa TIPO_CHOICES)
-    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)
-    # Marca y modelo (opcionales)
     marca = models.CharField(max_length=100, blank=True)
     modelo = models.CharField(max_length=100, blank=True)
     # Número de serie de fábrica (opcional)
@@ -128,7 +117,6 @@ class BienPatrimonial(models.Model):
         # Índices para acelerar búsquedas frecuentes
         indexes = [
             models.Index(fields=['numero_inventario']),
-            models.Index(fields=['tipo']),
             models.Index(fields=['estado']),
         ]
 
