@@ -29,39 +29,40 @@ class BienInline(admin.TabularInline):
 # ExpedienteAdmin.inlines = [BienInline]
 
 
-# Registro del modelo BienPatrimonial en el admin personalizado
 @admin.register(BienPatrimonial, site=custom_admin_site)
 class BienPatrimonialAdmin(admin.ModelAdmin):
-    # Columnas visibles en la lista de bienes para una vista rápida y útil
     list_display = [
-        'numero_inventario', 'nombre', 'servicios', 'estado',
+        'clave_unica', 'nombre', 'cantidad', 'servicios', 'estado',
         'expediente', 'origen', 'valor_adquisicion'
     ]
-    # Filtros laterales para segmentar resultados
-    list_filter = [ 'estado', 'fecha_adquisicion', 'origen', 'expediente']
-    # Campos y relaciones por los que se puede buscar
-    # Ojo con 'expediente__numero_expediente': uso de doble guion bajo para buscar por campo de FK
+    list_filter = ['estado', 'fecha_adquisicion', 'origen', 'expediente']
     search_fields = [
-        'numero_inventario', 'nombre', 'descripcion',
-        'numero_identificacion', 'servicios',
+        'clave_unica', 'nombre', 'descripcion', 'numero_identificacion',
+        'numero_serie', 'cuenta_codigo', 'nomenclatura_bienes', 'servicios',
         'expediente__numero_expediente'
     ]
-    # Campos que no se pueden editar manualmente (se llenan automáticamente)
-    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
-    # Navegación por fecha en la parte superior usando 'fecha_adquisicion'
     date_hierarchy = 'fecha_adquisicion'
-    # Paginación en la lista
     list_per_page = 25
-    # Orden por defecto
-    ordering = ('numero_inventario',)
-    # Autocompletar el campo expediente (útil si hay muchos expedientes)
+    ordering = ('clave_unica',)
     autocomplete_fields = ['expediente']
+    readonly_fields = ['clave_unica']
+    fields = (
+        'clave_unica',
+        'nombre',
+        'descripcion',
+        'cantidad',
+        'expediente',
+        'cuenta_codigo',
+        'nomenclatura_bienes',
+        'fecha_adquisicion',
+        'origen',
+        'estado',
+        'numero_serie',
+        'valor_adquisicion',
+        'numero_identificacion',
+        'servicios',
+    )
 
     def save_model(self, request, obj, form, change):
-        """
-        Al guardar desde el admin, forzamos las validaciones del modelo:
-        - Ejecuta clean() y los validators antes de hacer el save.
-        - Si hay errores, se muestran en el formulario del admin.
-        """
-        obj.full_clean()  # dispara clean() + validators de fields
+        obj.full_clean()
         super().save_model(request, obj, form, change)
