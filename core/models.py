@@ -159,24 +159,21 @@ class BienPatrimonial(models.Model):
             models.Index(fields=['estado']),
         ]
 
-    def __str__(self):
-        return f"{self.clave_unica} - {self.nombre}"
-
-    def clean(self):
-        super().clean()
+def clean(self):
+    # 👇 IMPORTANTE: este método debe estar INDENTADO dentro de la clase
+    super().clean()
 
     # 1) Precio no puede ser negativo (si viene informado)
-        if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
-            raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
+    if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
+        raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
 
     # 2) Fecha no puede ser futura
-        if self.fecha_adquisicion > date.today():
-            raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
+    if self.fecha_adquisicion > date.today():
+        raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
 
     # 3) Si el origen NO es compra, borramos el precio
-        if self.origen != 'COMPRA':
-           self.valor_adquisicion = None
-
+    if self.origen != 'COMPRA':
+        self.valor_adquisicion = None
 
 class Usuario(AbstractUser):
     TIPO_USUARIO = [
