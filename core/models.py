@@ -31,7 +31,7 @@ class Expediente(models.Model):
 
 # Modelo principal para representar un bien patrimonial del hospital
 class BienPatrimonial(models.Model):
-    # Estados posibles del bien para control de ciclo de vida
+    # Estados permitidos
     ESTADO_CHOICES = (
         ('ACTIVO', 'Activo'),
         ('INACTIVO', 'Inactivo'),
@@ -39,7 +39,7 @@ class BienPatrimonial(models.Model):
         ('BAJA', 'Dado de baja'),
     )
 
-    # Origen del bien (cómo ingresó al patrimonio)
+    # Origen del bien
     ORIGEN_CHOICES = (
         ('DONACION', 'Donación'),
         ('OMISION', 'Omisión'),
@@ -47,92 +47,117 @@ class BienPatrimonial(models.Model):
         ('COMPRA', 'Compra'),
     )
 
-    # Identificador interno único del inventario (placa/etiqueta)
-    numero_inventario = models.CharField(max_length=50, unique=True)
-    # Nombre corto del bien
-    nombre = models.CharField(max_length=200)
-    # Descripción detallada
-    descripcion = models.TextField()
-    # Tipo/clasificación del bien (usa TIPO_CHOICES)
-    marca = models.CharField(max_length=100, blank=True)
-    modelo = models.CharField(max_length=100, blank=True)
-    # Número de serie de fábrica (opcional)
-    numero_serie = models.CharField(max_length=100, blank=True)
+    # 1) Clave Única (PK autoincremental)
+    clave_unica = models.BigAutoField(
+        primary_key=True,
+        verbose_name="Clave Única",
+    )
 
-    # Datos de adquisición
-    fecha_adquisicion = models.DateField()
-    # Valor de compra/donación; no puede ser negativo
+    # 2) Nombre
+    nombre = models.CharField(
+        max_length=200,
+        verbose_name="Nombre",
+    )
+
+    # 3) Descripción
+    descripcion = models.TextField(
+        verbose_name="Descripción",
+    )
+
+    # 4) Cantidad (>=1)
+    cantidad = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        verbose_name="Cantidad",
+    )
+
+    # 5) N° de Expediente (FK opcional)
+    expediente = models.ForeignKey(
+        'Expediente',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bienes',
+        verbose_name="N° de Expediente",
+    )
+
+    # 6) Cuenta Código
+    cuenta_codigo = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Cuenta Código",
+    )
+
+    # 7) Nomenclatura de Bienes
+    nomenclatura_bienes = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Nomenclatura de Bienes",
+    )
+
+    # 8) Fecha de Alta
+    fecha_adquisicion = models.DateField(
+        verbose_name="Fecha de Alta",
+    )
+
+    # 9) Origen
+    origen = models.CharField(
+        max_length=15,
+        choices=ORIGEN_CHOICES,
+        default='COMPRA',
+        verbose_name="Origen",
+    )
+
+    # 10) Estado
+    estado = models.CharField(
+        max_length=50,
+        choices=ESTADO_CHOICES,
+        default='ACTIVO',
+        verbose_name="Estado",
+    )
+
+    # 11) N° de serie
+    numero_serie = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="N° de serie",
+    )
+
+    # 12) Precio (>= 0)
     valor_adquisicion = models.DecimalField(
         max_digits=12,
         decimal_places=2,
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(0)],
+        verbose_name="Precio",
     )
-    # Proveedor (si aplica)
-    proveedor = models.CharField(max_length=200, blank=True)
 
-    # Información contable y de origen
-    cuenta_codigo = models.CharField(max_length=20, blank=True)
-    # Origen del bien (por defecto: COMPRA)
-    origen = models.CharField(max_length=15, choices=ORIGEN_CHOICES, default='COMPRA')
-    # Donante (solo relevante si origen es DONACION)
-    donante = models.CharField(max_length=200, blank=True)
-    # Identificación adicional única (ej. código patrimonial externo)
+    # 13) Número de ID (único si se informa)
     numero_identificacion = models.CharField(
         max_length=50,
         unique=True,
-        null=True, blank=True,
-        verbose_name="Número de Identificación"
+        null=True,
+        blank=True,
+        verbose_name="Número de ID",
     )
 
-    # Ubicación física actual (servicio/dependencia) y responsable
-    servicios = models.CharField(max_length=200)
-    responsable = models.CharField(max_length=200)
-    # Estado actual del bien (usa ESTADO_CHOICES; por defecto ACTIVO)
-    estado = models.CharField(max_length=50, choices=ESTADO_CHOICES, default='ACTIVO')
-
-    # Relación opcional con un expediente; si se borra el expediente, queda en NULL
-    expediente = models.ForeignKey(
-        Expediente,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='bienes'  # permite expediente.bienes.all()
+    # 14) Servicios (sector/destino)
+    servicios = models.CharField(
+        max_length=200,
+        verbose_name="Servicios",
     )
-
-    # Observaciones y mantenimiento preventivo/correctivo
-    observaciones = models.TextField(blank=True)
-    fecha_ultimo_mantenimiento = models.DateField(null=True, blank=True)
-    proximo_mantenimiento = models.DateField(null=True, blank=True)
-
-    # Metadatos de auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)  # se setea al crear
-    fecha_actualizacion = models.DateTimeField(auto_now=True)  # se actualiza en cada save
-    # Usuario que creó el registro; si se borra el usuario, queda en NULL
-    usuario_creacion = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
-        # Nombres legibles y orden por número de inventario
         verbose_name = "Bien Patrimonial"
         verbose_name_plural = "Bienes Patrimoniales"
-        ordering = ['numero_inventario']
-        # Índices para acelerar búsquedas frecuentes
+        ordering = ['clave_unica']
         indexes = [
-            models.Index(fields=['numero_inventario']),
+            models.Index(fields=['clave_unica']),
             models.Index(fields=['estado']),
         ]
 
-    def clean(self):
-        """
-        Validaciones de negocio mínimas que se ejecutan antes de guardar (full_clean):
-        - Si el origen es DONACION, el campo 'donante' es obligatorio.
-        """
-        if self.origen == 'DONACION' and not self.donante:
-            # Se asocia el error al campo 'donante' para que el admin/form lo muestre ahí
-            raise ValidationError({'donante': 'Debe especificar el donante cuando el origen es DONACIÓN.'})
-
     def __str__(self):
-        # Representación en texto: "NroInventario - Nombre"
-        return f"{self.numero_inventario} - {self.nombre}"
-
+        return f"{self.clave_unica} - {self.nombre}"
+    
 class Usuario(AbstractUser):
     TIPO_USUARIO = [
         ('admin', 'Administrador'),
@@ -170,3 +195,19 @@ class Usuario(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.get_tipo_usuario_display()})"
 
+class Operador(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    nombre_completo = models.CharField(max_length=200)
+    email = models.EmailField(unique=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    direccion = models.CharField(max_length=300, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Operador"
+        verbose_name_plural = "Operadores"
+        ordering = ['nombre_completo']
+
+    def __str__(self):
+        return self.nombre_completo
