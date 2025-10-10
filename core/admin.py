@@ -34,11 +34,11 @@ class BienInline(admin.TabularInline):
 class BienPatrimonialAdmin(admin.ModelAdmin):
     # Columnas visibles en la lista de bienes para una vista rápida y útil
     list_display = [
-        'numero_inventario', 'nombre', 'tipo', 'servicios', 'estado',
+        'numero_inventario', 'nombre', 'servicios', 'estado',
         'expediente', 'origen', 'valor_adquisicion'
     ]
     # Filtros laterales para segmentar resultados
-    list_filter = ['tipo', 'estado', 'fecha_adquisicion', 'origen', 'expediente']
+    list_filter = [ 'estado', 'fecha_adquisicion', 'origen', 'expediente']
     # Campos y relaciones por los que se puede buscar
     # Ojo con 'expediente__numero_expediente': uso de doble guion bajo para buscar por campo de FK
     search_fields = [
