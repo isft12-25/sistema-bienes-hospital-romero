@@ -13,5 +13,27 @@
         <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const origenSelect = document.getElementById('id_origen');
+    const campoPrecio = document.getElementById('id_valor_adquisicion').closest('p');
+
+    function toggleCampoPrecio() {
+        if (origenSelect.value === 'COMPRA') {
+            campoPrecio.style.display = '';
+        } else {
+            campoPrecio.style.display = 'none';
+            document.getElementById('id_valor_adquisicion').value = '';
+        }
+    }
+
+    if (origenSelect && campoPrecio) {
+        origenSelect.addEventListener('change', toggleCampoPrecio);
+        toggleCampoPrecio();
+    }
+});
+</script>
+
 {% endblock %}
 

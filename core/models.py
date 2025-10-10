@@ -130,6 +130,8 @@ class BienPatrimonial(models.Model):
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(0)],
+        null=True, 
+        blank=True,
         verbose_name="Precio",
     )
 
@@ -163,17 +165,18 @@ class BienPatrimonial(models.Model):
     def clean(self):
         super().clean()
 
-        # Validación 1: Precio no puede ser negativo
-        if self.valor_adquisicion < 0:
-            raise ValidationError({
-                'valor_adquisicion': 'El precio no puede ser negativo'
-            })
+    # 1) Precio no puede ser negativo (si viene informado)
+        if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
+            raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
 
-        # Validación 2: Fecha no puede ser futura
+    # 2) Fecha no puede ser futura
         if self.fecha_adquisicion > date.today():
-            raise ValidationError({
-                'fecha_adquisicion': 'La fecha no puede ser futura'
-            })
+            raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
+
+    # 3) Si el origen NO es compra, borramos el precio
+        if self.origen != 'COMPRA':
+           self.valor_adquisicion = None
+
 
 class Usuario(AbstractUser):
     TIPO_USUARIO = [
