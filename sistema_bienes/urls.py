@@ -1,19 +1,19 @@
 from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
+from .admin import custom_admin_site  # o usa admin si no existe el custom
 from django.conf.urls.static import static
-from .admin import custom_admin_site
 
 urlpatterns = [
-    path('admin/', custom_admin_site.urls),  # Admin personalizado
-    path('', include('core.urls')),          # App principal
+    path('admin/', custom_admin_site.urls),  # o admin.site.urls
+    path('', include('core.urls')),
 ]
 
-# Debug Toolbar y archivos estáticos
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ]
+    try:
+        import debug_toolbar
+        urlpatterns += [ path('__debug__/', include(debug_toolbar.urls)) ]
+    except ImportError:
+        pass
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
