@@ -1,9 +1,12 @@
 
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+import pandas as pd
+from datetime import date
+from django.shortcuts import render, redirect
 from django.contrib import messages
-
+from django.contrib.auth.decorators import login_required
+from .forms import CargaMasivaForm
+from .models import BienPatrimonial
 
 def inicio(request):
     """
@@ -85,14 +88,6 @@ def registro(request):
     Vista de registro de usuario (formulario estático/placeholder).
     """
     return render(request, 'registro.html')
-
-
-def alta_operador(request):
-    """
-    Vista para dar de alta un operador (formulario estático/placeholder).
-    """
-    return render(request, 'alta_operador.html')
-
 
 def bien_confirm_delete(request):
     """
@@ -185,3 +180,116 @@ def reportes_view(request):
     Vista de reportes (plantilla estática/placeholder).
     """
     return render(request, 'reportes.html')
+
+@login_required
+def lista_bienes(request):
+    bienes = BienPatrimonial.objects.all().order_by('-fecha_adquisicion', 'nombre')[:500]
+    return render(request, 'bienes/lista_bienes.html', {'bienes': bienes})
+
+@login_required
+def carga_masiva_bienes(request):
+    """
+    Carga masiva desde Excel → TU modelo actual.
+    Mapeo:
+      - id_patrimonial -> numero_identificacion
+      - descripcion -> descripcion
+      - marca -> marca
+      - modelo -> modelo
+      - numero_serie -> numero_serie
+      - cantidad -> cantidad (default=1)
+      - sector -> servicios
+    Completa:
+      - nombre: primeros 80 chars de descripcion (o modelo/marca/serie o 'SIN NOMBRE')
+      - fecha_adquisicion: hoy
+      - origen: 'OMISION'
+      - estado: 'ACTIVO'
+      - valor_adquisicion: 0
+    Update-or-create por numero_identificacion si existe; si no, por (numero_serie + descripcion).
+    """
+    if request.method == 'POST':
+        form = CargaMasivaForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                archivo = request.FILES['archivo_excel']
+                sector_form = form.cleaned_data.get('sector', '').strip()
+
+                df = pd.read_excel(archivo)
+                df.columns = [str(c).strip().lower() for c in df.columns]
+
+                creados = 0
+                actualizados = 0
+                errores = []
+
+                for idx, row in df.iterrows():
+                    try:
+                        id_patrimonial = str(row.get('id_patrimonial', '') or '').strip()
+                        descripcion = str(row.get('descripcion', '') or '').strip()
+                        marca = str(row.get('marca', '') or '').strip()
+                        modelo = str(row.get('modelo', '') or '').strip()
+                        numero_serie = str(row.get('numero_serie', '') or '').strip()
+
+                        cantidad = row.get('cantidad', 1)
+                        # saneo cantidad
+                        try:
+                            cantidad = int(cantidad) if pd.notna(cantidad) else 1
+                            if cantidad < 1:
+                                cantidad = 1
+                        except Exception:
+                            cantidad = 1
+
+                        servicios = (sector_form or str(row.get('sector', '') or '')).strip()
+                        nombre = descripcion[:80] if descripcion else (modelo or marca or numero_serie or 'SIN NOMBRE')
+
+                        defaults = {
+                            'nombre': nombre,
+                            'descripcion': descripcion,
+                            'cantidad': cantidad,
+                            'servicios': servicios or 'Sin especificar',
+                            'marca': marca,
+                            'modelo': modelo,
+                            'numero_serie': numero_serie,
+                            'fecha_adquisicion': date.today(),
+                            'origen': 'OMISION',       # cambia a 'COMPRA' si lo prefieren
+                            'estado': 'ACTIVO',
+                            'valor_adquisicion': 0,
+                        }
+
+                        if id_patrimonial:
+                            obj, created = BienPatrimonial.objects.update_or_create(
+                                numero_identificacion=id_patrimonial,
+                                defaults=defaults
+                            )
+                        else:
+                            obj, created = BienPatrimonial.objects.update_or_create(
+                                numero_serie=numero_serie,
+                                descripcion=descripcion,
+                                defaults=defaults
+                            )
+
+                        creados += int(created)
+                        actualizados += int(not created)
+
+                    except Exception as e:
+                        errores.append(f"Fila {idx + 2}: {str(e)}")
+
+                if creados or actualizados:
+                    messages.success(
+                        request,
+                        f'Creados: {creados}, Actualizados: {actualizados}. Errores: {len(errores)}'
+                    )
+                else:
+                    messages.warning(request, 'No se crearon ni actualizaron bienes.')
+
+                if errores:
+                    messages.error(request, 'Algunas filas fallaron: ' + ' | '.join(errores[:5]))
+
+                return redirect('lista_bienes')
+
+            except Exception as e:
+                messages.error(request, f'Error al procesar el archivo: {str(e)}')
+    else:
+        form = CargaMasivaForm()
+
+    return render(request, 'carga_masiva.html', {'form': form})
+
+

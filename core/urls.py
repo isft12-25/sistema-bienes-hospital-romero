@@ -8,11 +8,12 @@ urlpatterns = [
     path('registro/', views.registro, name='registro'),
     path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
     path('home_admin/', views.home_admin, name='home_admin'),
-    path('alta_operador/', views.alta_operador, name='alta_operador'), 
     path('bien_confirm_delete/', views.bien_confirm_delete, name='bien_confirm_delete'),
-    path('base.html', views.base, name='base'),
-    path('bienes.html', views.bienes, name='bienes'),
-    path('operadores.html', views.operadores, name='operadores'), 
+    path('base/', views.base, name='base'),
+    path('bienes/', views.bienes, name='bienes'),
+    path('operadores/', views.operadores, name='operadores'), 
     path('alta-operadores/', views.alta_operadores, name='alta_operadores'),
-    path('reportes/', views.reportes_view, name='reportes')
+    path('reportes/', views.reportes_view, name='reportes'),
+    path('lista-bienes/', views.lista_bienes, name='lista_bienes'),
+    path('carga-masiva/', views.carga_masiva_bienes, name='carga_masiva'),
 ]

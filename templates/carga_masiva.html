@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Carga Masiva{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 720px;">
+    <h2 class="mb-3">Carga Masiva de Bienes Patrimoniales</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Archivo Excel</label>
+                    {{ form.archivo_excel }}
+                    <div class="form-text">{{ form.archivo_excel.help_text }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Sector</label>
+                    {{ form.sector }}
+                    <div class="form-text">{{ form.sector.help_text }}</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Procesar Archivo
+                </button>
+                <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>Instrucciones</h5>
+        <ul>
+            <li>Columnas recomendadas: <code>id_patrimonial</code>, <code>descripcion</code>, <code>marca</code>, <code>modelo</code>, <code>numero_serie</code>, <code>cantidad</code>, <code>sector</code>.</li>
+            <li>Si falta <code>id_patrimonial</code>, se intenta evitar duplicados con <code>numero_serie + descripcion</code>.</li>
+            <li>Los obligatorios del sistema se completan con valores por defecto.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
