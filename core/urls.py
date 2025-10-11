@@ -19,4 +19,5 @@ urlpatterns = [
     path('carga-masiva/', views.carga_masiva_bienes, name='carga_masiva'),
     path('bienes/<int:pk>/editar/', views.editar_bien, name='editar_bien'),
     path('bienes/<int:pk>/eliminar/', views.eliminar_bien, name='eliminar_bien'),
+    path('bienes/eliminar-seleccionados/', views.eliminar_bienes_seleccionados, name='eliminar_bienes_seleccionados'),
 ]

@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import CargaMasivaForm
 from .models import BienPatrimonial
 from django.db.models import Q
-from django.http import HttpResponse
 from .forms import BienPatrimonialForm
+from django.views.decorators.http import require_POST
 
 def inicio(request):
     """
@@ -197,9 +197,9 @@ def lista_bienes(request):
     if q:
         bienes = bienes.filter(
             Q(clave_unica__icontains=q) |
+            Q(numero_identificacion__icontains=q) |
             Q(nombre__icontains=q) |
             Q(descripcion__icontains=q) |
-            Q(numero_identificacion__icontains=q) |
             Q(servicios__icontains=q) |
             Q(cuenta_codigo__icontains=q) |
             Q(nomenclatura_bienes__icontains=q) |
@@ -230,8 +230,6 @@ def editar_bien(request, pk):
     return render(request, 'bienes/editar_bien.html', {'form': form, 'bien': bien})
 
 
-
-
 def eliminar_bien(request, pk): 
 
     bien = get_object_or_404(BienPatrimonial, pk=pk)
@@ -251,6 +249,7 @@ def carga_masiva_bienes(request):
                 archivo = request.FILES['archivo_excel']
                 sector_form = form.cleaned_data.get('sector', '').strip()
 
+                # Leer Excel y normalizar encabezados a minúsculas
                 df = pd.read_excel(archivo)
                 df.columns = [str(c).strip().lower() for c in df.columns]
 
@@ -260,14 +259,13 @@ def carga_masiva_bienes(request):
 
                 for idx, row in df.iterrows():
                     try:
+                        # columnas esperadas en el excel
                         id_patrimonial = str(row.get('id_patrimonial', '') or '').strip()
                         descripcion = str(row.get('descripcion', '') or '').strip()
-                        marca = str(row.get('marca', '') or '').strip()
-                        modelo = str(row.get('modelo', '') or '').strip()
                         numero_serie = str(row.get('numero_serie', '') or '').strip()
 
+                        # cantidad saneada (>=1)
                         cantidad = row.get('cantidad', 1)
-                        # saneo cantidad
                         try:
                             cantidad = int(cantidad) if pd.notna(cantidad) else 1
                             if cantidad < 1:
@@ -275,37 +273,54 @@ def carga_masiva_bienes(request):
                         except Exception:
                             cantidad = 1
 
+                        # sector/servicio (desde form si no viene en excel)
                         servicios = (sector_form or str(row.get('sector', '') or '')).strip()
-                        nombre = descripcion[:80] if descripcion else (modelo or marca or numero_serie or 'SIN NOMBRE')
+                        if not servicios:
+                            servicios = 'Sin especificar'
 
+                        # nombre: desde descripción o fallback
+                        nombre = descripcion[:200] if descripcion else (numero_serie or 'SIN NOMBRE')
+
+                        # por ahora dejamos origen=OMISION y sin precio
                         defaults = {
+                            'numero_identificacion': (str(row.get('numero_identificacion', '') or '').strip()  or None),
                             'nombre': nombre,
                             'descripcion': descripcion,
                             'cantidad': cantidad,
-                            'servicios': servicios or 'Sin especificar',
-                            'marca': marca,
-                            'modelo': modelo,
+                            'servicios': servicios,
                             'numero_serie': numero_serie,
                             'fecha_adquisicion': date.today(),
-                            'origen': 'OMISION',       # cambia a 'COMPRA' si lo prefieren
+                            'origen': 'OMISION',        # si luego querés, cámbialo a 'COMPRA'
                             'estado': 'ACTIVO',
-                            'valor_adquisicion': 0,
+                            'valor_adquisicion': None,  # si no es COMPRA, no hay precio
+                            'cuenta_codigo': str(row.get('cuenta_codigo', '') or '').strip(),
+                            'nomenclatura_bienes': str(row.get('nomenclatura_bienes', '') or '').strip(),
+                           
                         }
 
-                        if id_patrimonial:
+                        # clave de actualización:
+                        # 1) si viene ID patrimonial (numero_identificacion) => se usa como clave
+                        # 2) si no, actualizamos por (numero_serie + descripcion) para evitar duplicados
+                        if defaults['numero_identificacion']:
                             obj, created = BienPatrimonial.objects.update_or_create(
-                                numero_identificacion=id_patrimonial,
+                                numero_identificacion=defaults['numero_identificacion'],
                                 defaults=defaults
                             )
-                        else:
+                        elif numero_serie and descripcion:
                             obj, created = BienPatrimonial.objects.update_or_create(
                                 numero_serie=numero_serie,
                                 descripcion=descripcion,
                                 defaults=defaults
                             )
+                        else:
+                            # si no hay clave estable, creamos uno nuevo
+                            obj = BienPatrimonial.objects.create(**defaults)
+                            created = True
 
-                        creados += int(created)
-                        actualizados += int(not created)
+                        if created:
+                            creados += 1
+                        else:
+                            actualizados += 1
 
                     except Exception as e:
                         errores.append(f"Fila {idx + 2}: {str(e)}")
@@ -328,4 +343,17 @@ def carga_masiva_bienes(request):
     else:
         form = CargaMasivaForm()
 
-    return render(request, 'carga_masiva.html', {'form': form}) 
+    # RESPETA TU ESTRUCTURA DE TEMPLATES:
+    return render(request, 'carga_masiva.html', {'form': form})
+
+@login_required
+@require_POST
+def eliminar_bienes_seleccionados(request):
+    ids = request.POST.getlist('seleccionados')  # viene de los checkboxes
+    if not ids:
+        messages.warning(request, "No seleccionaste bienes para eliminar.")
+        return redirect('lista_bienes')
+
+    eliminados = BienPatrimonial.objects.filter(pk__in=ids).delete()[0]
+    messages.success(request, f"Eliminados: {eliminados}")
+    return redirect('lista_bienes')
