@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Bienes Patrimoniales{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+  <!-- BARRA SUPERIOR -->
+  <form method="get" class="row g-2 align-items-center mb-3">
+    <div class="col-md-6">
+      <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar...">
+    </div>
+
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-search me-1"></i> Buscar
+      </button>
+    </div>
+
+    <div class="col-auto">
+      <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">Limpiar</a>
+    </div>
+
+    <div class="col-auto">
+      <a class="btn btn-success" href="{% url 'carga_masiva' %}">
+        <i class="fas fa-file-excel me-1"></i> Carga masiva
+      </a>
+    </div>
+
+    <!-- CONTROLES A LA DERECHA -->
+    <div class="col ms-auto text-end">
+      <!-- Toggle selección (solo muestra/oculta la columna de checks) -->
+      <button type="button" id="btn-toggle-seleccion" class="btn btn-outline-danger">
+        <i class="fas fa-check-square me-1"></i> Eliminar seleccionados
+      </button>
+
+      <!-- Enviar eliminación (solo visible en modo selección) -->
+      <button type="submit"
+              id="btn-confirm-eliminar"
+              form="form-eliminar-bienes"
+              class="btn btn-danger ms-2 d-none"
+              disabled>
+        <i class="fas fa-trash me-1"></i> Eliminar (0)
+      </button>
+    </div>
+
+    <div class="col-12 mt-2 text-muted">
+      {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
+      Total: {{ bienes|length }}
+    </div>
+  </form>
+
+  <!-- FORM DE ELIMINACIÓN (encierra la tabla para que los checks viajen por POST) -->
+  <form id="form-eliminar-bienes" method="post" action="{% url 'eliminar_bienes_seleccionados' %}">
+    {% csrf_token %}
+
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light text-center">
+          <tr>
+            <!-- Columna de selección: oculta por defecto -->
+            <th class="seleccion-col d-none" style="width:36px;">
+              <input type="checkbox" id="select-all" class="form-check-input">
+            </th>
+            <th>Clave Única</th>
+            <th>N de ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>N de Expediente</th>
+            <th>N de Compra</th>
+            <th>Cuenta Código</th>
+            <th>Nomenclatura de Bienes</th>
+            <th>N de Serie</th>
+            <th>Origen</th>
+            <th>Estado</th>
+            <th>Servicios</th>
+            <th>Precio</th>
+            <th>Fecha de Alta</th>
+            <th class="text-nowrap">Editar</th>
+            <th class="text-nowrap">Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bienes %}
+          <tr>
+            <!-- Check por fila (oculto por defecto) -->
+            <td class="text-center seleccion-col d-none">
+              <input type="checkbox" class="form-check-input chk-bien" name="seleccionados" value="{{ b.pk }}">
+            </td>
+
+            <!-- ORDEN DE CELDAS EXACTO AL ENCABEZADO -->
+            <td class="text-nowrap">{{ b.clave_unica }}</td>                         {# Clave Única #}
+            <td class="text-nowrap">{{ b.numero_identificacion|default:"—" }}</td>   {# N de ID #}
+            <td>{{ b.nombre }}</td>                                                  {# Nombre #}
+            <td style="min-width:260px;">{{ b.descripcion }}</td>                     {# Descripción #}
+            <td class="text-center">{{ b.cantidad }}</td>                             {# Cantidad #}
+            <td class="text-nowrap">{{ b.expediente.numero_expediente|default:"—" }}</td>  {# N° Expediente #}
+            <td class="text-nowrap">{{ b.expediente.numero_compra|default:"—" }}</td>      {# N° Compra #}
+            <td class="text-nowrap">{{ b.cuenta_codigo|default:"—" }}</td>                 {# Cuenta Código #}
+            <td class="text-nowrap">{{ b.nomenclatura_bienes|default:"—" }}</td>           {# Nomenclatura #}
+            <td class="text-nowrap">{{ b.numero_serie|default:"—" }}</td>                   {# N° Serie #}
+            <td class="text-nowrap">{{ b.get_origen_display|default:b.origen }}</td>       {# Origen #}
+            <td class="text-nowrap">{{ b.get_estado_display|default:b.estado }}</td>       {# Estado #}
+            <td class="text-nowrap">{{ b.servicios }}</td>                                  {# Servicios #}
+            <td class="text-end">
+              {% if b.valor_adquisicion %}${{ b.valor_adquisicion|floatformat:0|intcomma }}{% else %}—{% endif %}
+            </td>                                                                           {# Precio #}
+            <td class="text-nowrap">{{ b.fecha_adquisicion|date:"d/m/Y" }}</td>             {# Fecha de Alta #}
+
+            <!-- Acciones -->
+            <td class="text-center">
+              <a class="btn btn-sm btn-info" href="{% url 'editar_bien' b.pk %}">
+                <i class="fas fa-pen"></i>
+              </a>
+            </td>
+            <td class="text-center">
+              <a class="btn btn-sm btn-danger"
+                 href="{% url 'eliminar_bien' b.pk %}"
+                 onclick="return confirm('¿Eliminar este bien?');">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="18" class="text-center text-muted py-4">No hay bienes para mostrar.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+<!-- JS mínimo para togglear columna y contar seleccionados -->
+<script>
+  (function () {
+    const btnToggle = document.getElementById('btn-toggle-seleccion');
+    const btnEliminar = document.getElementById('btn-confirm-eliminar');
+    const selectAll  = document.getElementById('select-all');
+
+    const toggleCols = () => {
+      document.querySelectorAll('.seleccion-col').forEach(el => el.classList.toggle('d-none'));
+      btnEliminar.classList.toggle('d-none');
+      selectAll.checked = false;
+      document.querySelectorAll('.chk-bien').forEach(c => c.checked = false);
+      updateCount();
+    };
+
+    const updateCount = () => {
+      const n = Array.from(document.querySelectorAll('.chk-bien')).filter(c => c.checked).length;
+      btnEliminar.textContent = n > 0 ? `Eliminar (${n})` : 'Eliminar (0)';
+      btnEliminar.disabled = n === 0;
+    };
+
+    btnToggle.addEventListener('click', toggleCols);
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        document.querySelectorAll('.chk-bien').forEach(c => c.checked = selectAll.checked);
+        updateCount();
+      });
+    }
+
+    document.addEventListener('change', function (e) {
+      if (e.target.classList && e.target.classList.contains('chk-bien')) {
+        updateCount();
+      }
+    });
+  })();
+</script>
+{% endblock %}

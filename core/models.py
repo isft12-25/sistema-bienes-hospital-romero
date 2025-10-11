@@ -1,8 +1,10 @@
-from django.db import models
-from django.core.validators import MinValueValidator
+# Standard library imports
+from datetime import date
+# Third party imports
+from django.contrib.auth.models import AbstractUser # Third party imports
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
+from django.db import models
 
 
 
@@ -14,9 +16,9 @@ class Expediente(models.Model):
     organismo_origen = models.CharField(max_length=120, blank=True)
     # Número de compra o referencia de contratación (opcional)
     numero_compra = models.CharField(max_length=50, blank=True)
-    
+
     proveedor = models.CharField(max_length=200, blank=True)
-    
+
     class Meta:
         # Nombres legibles en el admin
         verbose_name = "Expediente"
@@ -24,9 +26,9 @@ class Expediente(models.Model):
         # Orden por número de expediente por defecto
         ordering = ['numero_expediente']
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Representación en texto: muestra el número del expediente
-        return self.numero_expediente
+        return str(self.numero_expediente)
 
 
 # Modelo principal para representar un bien patrimonial del hospital
@@ -128,6 +130,8 @@ class BienPatrimonial(models.Model):
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(0)],
+        null=True, 
+        blank=True,
         verbose_name="Precio",
     )
 
@@ -155,50 +159,63 @@ class BienPatrimonial(models.Model):
             models.Index(fields=['estado']),
         ]
 
-    def __str__(self):
-        return f"{self.clave_unica} - {self.nombre}"
-    
+def clean(self):
+    # 👇 IMPORTANTE: este método debe estar INDENTADO dentro de la clase
+    super().clean()
+
+    # 1) Precio no puede ser negativo (si viene informado)
+    if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
+        raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
+
+    # 2) Fecha no puede ser futura
+    if self.fecha_adquisicion > date.today():
+        raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
+
+    # 3) Si el origen NO es compra, borramos el precio
+    if self.origen != 'COMPRA':
+        self.valor_adquisicion = None
+
 class Usuario(AbstractUser):
     TIPO_USUARIO = [
         ('admin', 'Administrador'),
         ('empleado', 'Empleado Hospital'),
     ]
-    
+
     tipo_usuario = models.CharField(
         max_length=10,
         choices=TIPO_USUARIO,
         default='empleado'
     )
-    
+
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name='grupos',
         blank=True,
         help_text='Los grupos a los que pertenece este usuario.',
-        related_name='usuarios_custom',  
+        related_name='usuarios_custom',
         related_query_name='usuario_custom',
     )
-    
+
     user_permissions = models.ManyToManyField(
         'auth.Permission',
         verbose_name='permisos de usuario',
         blank=True,
         help_text='Permisos específicos para este usuario.',
-        related_name='usuarios_custom', 
+        related_name='usuarios_custom',
         related_query_name='usuario_custom',
     )
-    
+
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
-    
-    def __str__(self):
-        return f"{self.username} ({self.get_tipo_usuario_display()})"
+
+    def __str__(self) -> str:
+        tipo_display = dict(self.TIPO_USUARIO).get(self.tipo_usuario, self.tipo_usuario)
+        return f"{self.username} ({tipo_display})"
 
 class Operador(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     nombre_completo = models.CharField(max_length=200)
-    email = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, blank=True)
     direccion = models.CharField(max_length=300, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -209,5 +226,21 @@ class Operador(models.Model):
         verbose_name_plural = "Operadores"
         ordering = ['nombre_completo']
 
-    def __str__(self):
-        return self.nombre_completo
+    def __str__(self) -> str:
+        return str(self.nombre_completo)
+
+    @property
+    def email(self) -> str:
+        """Método útil: obtiene el email del usuario sin tener que ir por usuario.email"""
+        if self.usuario and hasattr(self.usuario, 'email'):
+            return self.usuario.email
+        return ""
+
+    @property
+    def username(self) -> str:
+        """Método útil: obtiene el username sin tener que ir por usuario.username"""
+        if self.usuario and hasattr(self.usuario, 'username'):
+            return self.usuario.username
+        return ""
+
+

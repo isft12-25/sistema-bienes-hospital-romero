@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Bien Patrimonial{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Bien Patrimonial #{{ bien.pk }}</h2>
+
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const origenSelect = document.getElementById('id_origen');
+    const campoPrecio = document.getElementById('id_valor_adquisicion').closest('p');
+
+    function toggleCampoPrecio() {
+        if (origenSelect.value === 'COMPRA') {
+            campoPrecio.style.display = '';
+        } else {
+            campoPrecio.style.display = 'none';
+            document.getElementById('id_valor_adquisicion').value = '';
+        }
+    }
+
+    if (origenSelect && campoPrecio) {
+        origenSelect.addEventListener('change', toggleCampoPrecio);
+        toggleCampoPrecio();
+    }
+});
+</script>
+
+{% endblock %}
+

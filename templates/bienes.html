@@ -106,4 +106,25 @@
     </tbody>
   </table>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const origenSelect = document.getElementById('id_origen');
+    const campoPrecio = document.querySelector('[name="precio"]').closest('td');
+
+    function toggleCampoPrecio() {
+        const valor = origenSelect.value;
+        if (valor === 'COMPRA') {
+            campoPrecio.style.display = '';
+        } else {
+            campoPrecio.style.display = 'none';
+            document.querySelector('[name="precio"]').value = '';
+        }
+    }
+
+    if (origenSelect && campoPrecio) {
+        origenSelect.addEventListener('change', toggleCampoPrecio);
+        toggleCampoPrecio();
+    }
+});
+</script>
 {% endblock %}
