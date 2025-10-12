@@ -186,20 +186,25 @@ def reportes_view(request):
 
 @login_required
 def lista_bienes(request):
-    q = (request.GET.get("q") or "").strip()
+    q        = (request.GET.get("q") or "").strip()
+    f_origen = request.GET.get("f_origen") or ""
+    f_estado = request.GET.get("f_estado") or ""
+    f_desde  = request.GET.get("f_desde") or ""
+    f_hasta  = request.GET.get("f_hasta") or ""
+    orden    = request.GET.get("orden") or "-fecha"
 
     bienes = (
         BienPatrimonial.objects
-        .select_related("expediente")        # para usar expediente.numero_expediente / numero_compra
+        .select_related("expediente")
         .order_by("clave_unica")
     )
 
+    # Búsqueda (SIN el campo 'nombre')
     if q:
         bienes = bienes.filter(
             Q(clave_unica__icontains=q) |
-            Q(numero_identificacion__icontains=q) |
-            Q(nombre__icontains=q) |
             Q(descripcion__icontains=q) |
+            Q(numero_identificacion__icontains=q) |
             Q(servicios__icontains=q) |
             Q(cuenta_codigo__icontains=q) |
             Q(nomenclatura_bienes__icontains=q) |
@@ -209,6 +214,41 @@ def lista_bienes(request):
             Q(expediente__numero_expediente__icontains=q) |
             Q(expediente__numero_compra__icontains=q)
         )
+
+    # Filtro por origen (incluye opción “sin origen”)
+    if f_origen == "__NULL__":
+        bienes = bienes.filter(origen__isnull=True)
+    elif f_origen:
+        bienes = bienes.filter(origen=f_origen)
+
+    # Filtro por estado (incluye opción “sin estado”)
+    if f_estado == "__NULL__":
+        bienes = bienes.filter(estado__isnull=True)
+    elif f_estado:
+        bienes = bienes.filter(estado=f_estado)
+
+    # Filtro por rango de fechas (fecha de alta)
+    from django.utils.dateparse import parse_date
+    if f_desde:
+        d = parse_date(f_desde)
+        if d:
+            bienes = bienes.filter(fecha_adquisicion__gte=d)
+    if f_hasta:
+        h = parse_date(f_hasta)
+        if h:
+            bienes = bienes.filter(fecha_adquisicion__lte=h)
+
+    # Ordenamientos
+    if orden == "fecha":
+        bienes = bienes.order_by("fecha_adquisicion", "clave_unica")
+    elif orden == "-fecha":
+        bienes = bienes.order_by("-fecha_adquisicion", "clave_unica")
+    elif orden == "precio":
+        bienes = bienes.order_by("valor_adquisicion", "clave_unica")
+    elif orden == "-precio":
+        bienes = bienes.order_by("-valor_adquisicion", "clave_unica")
+    else:
+        bienes = bienes.order_by("clave_unica")
 
     return render(
         request,

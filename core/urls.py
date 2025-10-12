@@ -11,7 +11,7 @@ urlpatterns = [
 
     # Admin / Operadores
     path('home_admin/', views.home_admin, name='home_admin'),
-    path('alta_operador/', views.alta_operador, name='alta_operador'),
+    path('alta_operador/', views.alta_operadores, name='alta_operador'),
     path('operadores.html', views.operadores, name='operadores'),
 
     # Bienes

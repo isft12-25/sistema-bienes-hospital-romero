@@ -7,66 +7,102 @@
 {% block content %}
 <div class="container-fluid py-3">
 
-  <!-- BARRA SUPERIOR -->
-  <form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col-md-6">
-      <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar...">
+<!-- BÚSQUEDA + BOTONES -->
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-md-4">
+    <label class="form-label">Buscar</label>
+    <input type="search" name="q" value="{{ q }}" class="form-control"
+           placeholder="Descripción, ID, servicio...">
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label">Ordenar</label>
+    <select name="orden" class="form-select">
+      <option value="-fecha"  {% if request.GET.orden == "-fecha" %}selected{% endif %}>Más recientes</option>
+      <option value="fecha"   {% if request.GET.orden == "fecha" %}selected{% endif %}>Más antiguos</option>
+      <option value="-precio" {% if request.GET.orden == "-precio" %}selected{% endif %}>Precio ↓</option>
+      <option value="precio"  {% if request.GET.orden == "precio" %}selected{% endif %}>Precio ↑</option>
+    </select>
+  </div>
+
+  <!-- Botones principales -->
+  <div class="col-auto d-flex align-items-end gap-2">
+    <button class="btn btn-primary" type="submit">
+      <i class="fas fa-search me-1"></i> Buscar
+    </button>
+    <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">Limpiar</a>
+    <a class="btn btn-success" href="{% url 'carga_masiva' %}">
+      <i class="fas fa-file-excel me-1"></i> Carga masiva
+    </a>
+
+    <!-- Nuevo: botón para desplegar filtros -->
+    <button class="btn btn-outline-primary" type="button"
+            data-bs-toggle="collapse" data-bs-target="#filtrosBox"
+            aria-expanded="false" aria-controls="filtrosBox" id="btn-filtros">
+      <i class="fas fa-sliders-h me-1"></i> Filtros
+      <span class="badge bg-primary ms-1" id="filtros-count" style="display:none;">0</span>
+    </button>
+  </div>
+
+  <!-- Caja colapsable de filtros -->
+  <div class="col-12 collapse mt-3" id="filtrosBox">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label">Origen</label>
+        <select name="f_origen" class="form-select">
+          <option value="">Todos</option>
+          <option value="COMPRA"        {% if request.GET.f_origen == "COMPRA" %}selected{% endif %}>Compra</option>
+          <option value="DONACION"      {% if request.GET.f_origen == "DONACION" %}selected{% endif %}>Donación</option>
+          <option value="OMISION"       {% if request.GET.f_origen == "OMISION" %}selected{% endif %}>Omisión</option>
+          <option value="TRANSFERENCIA" {% if request.GET.f_origen == "TRANSFERENCIA" %}selected{% endif %}>Transferencia/Traslado</option>
+          <option value="__NULL__"      {% if request.GET.f_origen == "__NULL__" %}selected{% endif %}>Sin origen</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <select name="f_estado" class="form-select">
+          <option value="">Todos</option>
+          <option value="ACTIVO"        {% if request.GET.f_estado == "ACTIVO" %}selected{% endif %}>Activo</option>
+          <option value="INACTIVO"      {% if request.GET.f_estado == "INACTIVO" %}selected{% endif %}>Inactivo</option>
+          <option value="MANTENIMIENTO" {% if request.GET.f_estado == "MANTENIMIENTO" %}selected{% endif %}>En mantenimiento</option>
+          <option value="BAJA"          {% if request.GET.f_estado == "BAJA" %}selected{% endif %}>Dado de baja</option>
+          <option value="__NULL__"      {% if request.GET.f_estado == "__NULL__" %}selected{% endif %}>Sin estado</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Desde (Alta)</label>
+        <input type="date" name="f_desde" class="form-control" value="{{ request.GET.f_desde }}">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Hasta (Alta)</label>
+        <input type="date" name="f_hasta" class="form-control" value="{{ request.GET.f_hasta }}">
+      </div>
     </div>
+  </div>
 
-    <div class="col-auto">
-      <button class="btn btn-primary" type="submit">
-        <i class="fas fa-search me-1"></i> Buscar
-      </button>
-    </div>
+  <!-- info total -->
+  <div class="col-12 mt-2 text-muted">
+    {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
+    Total: {{ bienes|length }}
+  </div>
+</form>
 
-    <div class="col-auto">
-      <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">Limpiar</a>
-    </div>
-
-    <div class="col-auto">
-      <a class="btn btn-success" href="{% url 'carga_masiva' %}">
-        <i class="fas fa-file-excel me-1"></i> Carga masiva
-      </a>
-    </div>
-
-    <!-- CONTROLES A LA DERECHA -->
-    <div class="col ms-auto text-end">
-      <!-- Toggle selección (solo muestra/oculta la columna de checks) -->
-      <button type="button" id="btn-toggle-seleccion" class="btn btn-outline-danger">
-        <i class="fas fa-check-square me-1"></i> Eliminar seleccionados
-      </button>
-
-      <!-- Enviar eliminación (solo visible en modo selección) -->
-      <button type="submit"
-              id="btn-confirm-eliminar"
-              form="form-eliminar-bienes"
-              class="btn btn-danger ms-2 d-none"
-              disabled>
-        <i class="fas fa-trash me-1"></i> Eliminar (0)
-      </button>
-    </div>
-
-    <div class="col-12 mt-2 text-muted">
-      {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
-      Total: {{ bienes|length }}
-    </div>
-  </form>
-
-  <!-- FORM DE ELIMINACIÓN (encierra la tabla para que los checks viajen por POST) -->
+  <!-- ELIMINACIÓN MÚLTIPLE -->
   <form id="form-eliminar-bienes" method="post" action="{% url 'eliminar_bienes_seleccionados' %}">
     {% csrf_token %}
 
     <div class="table-responsive">
-      <table class="table table-sm table-bordered align-middle">
+      <table id="tabla-bienes" class="table table-sm table-bordered align-middle">
         <thead class="table-light text-center">
           <tr>
-            <!-- Columna de selección: oculta por defecto -->
             <th class="seleccion-col d-none" style="width:36px;">
               <input type="checkbox" id="select-all" class="form-check-input">
             </th>
             <th>Clave Única</th>
             <th>N de ID</th>
-            <th>Nombre</th>
             <th>Descripción</th>
             <th>Cantidad</th>
             <th>N de Expediente</th>
@@ -77,8 +113,10 @@
             <th>Origen</th>
             <th>Estado</th>
             <th>Servicios</th>
+            <th>Observaciones</th>
             <th>Precio</th>
             <th>Fecha de Alta</th>
+            <th>Fecha de Baja</th>
             <th class="text-nowrap">Editar</th>
             <th class="text-nowrap">Eliminar</th>
           </tr>
@@ -86,31 +124,29 @@
         <tbody>
           {% for b in bienes %}
           <tr>
-            <!-- Check por fila (oculto por defecto) -->
             <td class="text-center seleccion-col d-none">
               <input type="checkbox" class="form-check-input chk-bien" name="seleccionados" value="{{ b.pk }}">
             </td>
 
-            <!-- ORDEN DE CELDAS EXACTO AL ENCABEZADO -->
-            <td class="text-nowrap">{{ b.clave_unica }}</td>                         {# Clave Única #}
-            <td class="text-nowrap">{{ b.numero_identificacion|default:"—" }}</td>   {# N de ID #}
-            <td>{{ b.nombre }}</td>                                                  {# Nombre #}
-            <td style="min-width:260px;">{{ b.descripcion }}</td>                     {# Descripción #}
-            <td class="text-center">{{ b.cantidad }}</td>                             {# Cantidad #}
-            <td class="text-nowrap">{{ b.expediente.numero_expediente|default:"—" }}</td>  {# N° Expediente #}
-            <td class="text-nowrap">{{ b.expediente.numero_compra|default:"—" }}</td>      {# N° Compra #}
-            <td class="text-nowrap">{{ b.cuenta_codigo|default:"—" }}</td>                 {# Cuenta Código #}
-            <td class="text-nowrap">{{ b.nomenclatura_bienes|default:"—" }}</td>           {# Nomenclatura #}
-            <td class="text-nowrap">{{ b.numero_serie|default:"—" }}</td>                   {# N° Serie #}
-            <td class="text-nowrap">{{ b.get_origen_display|default:b.origen }}</td>       {# Origen #}
-            <td class="text-nowrap">{{ b.get_estado_display|default:b.estado }}</td>       {# Estado #}
-            <td class="text-nowrap">{{ b.servicios }}</td>                                  {# Servicios #}
+            <td class="text-nowrap">{{ b.clave_unica }}</td>
+            <td class="text-nowrap">{{ b.numero_identificacion|default:"—" }}</td>
+            <td style="min-width:260px;">{{ b.descripcion }}</td>
+            <td class="text-center">{{ b.cantidad }}</td>
+            <td class="text-nowrap">{{ b.expediente.numero_expediente|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.expediente.numero_compra|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.cuenta_codigo|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.nomenclatura_bienes|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.numero_serie|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.get_origen_display|default:b.origen|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.get_estado_display|default:b.estado|default:"—" }}</td>
+            <td class="text-nowrap">{{ b.servicios|default:"—" }}</td>
+            <td style="min-width:220px;">{{ b.observaciones|default:"—" }}</td>
             <td class="text-end">
               {% if b.valor_adquisicion %}${{ b.valor_adquisicion|floatformat:0|intcomma }}{% else %}—{% endif %}
-            </td>                                                                           {# Precio #}
-            <td class="text-nowrap">{{ b.fecha_adquisicion|date:"d/m/Y" }}</td>             {# Fecha de Alta #}
+            </td>
+            <td class="text-nowrap">{% if b.fecha_adquisicion %}{{ b.fecha_adquisicion|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+            <td class="text-nowrap">{% if b.fecha_baja %}{{ b.fecha_baja|date:"d/m/Y" }}{% else %}—{% endif %}</td>
 
-            <!-- Acciones -->
             <td class="text-center">
               <a class="btn btn-sm btn-info" href="{% url 'editar_bien' b.pk %}">
                 <i class="fas fa-pen"></i>
@@ -126,7 +162,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="18" class="text-center text-muted py-4">No hay bienes para mostrar.</td>
+            <td colspan="19" class="text-center text-muted py-4">No hay bienes para mostrar.</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -135,41 +171,73 @@
   </form>
 </div>
 
-<!-- JS mínimo para togglear columna y contar seleccionados -->
+<!-- JS selección múltiple (solo esto, sin nada de resize) -->
 <script>
-  (function () {
-    const btnToggle = document.getElementById('btn-toggle-seleccion');
-    const btnEliminar = document.getElementById('btn-confirm-eliminar');
-    const selectAll  = document.getElementById('select-all');
+(function () {
+  const btnToggle = document.getElementById('btn-toggle-seleccion');
+  const btnEliminar = document.getElementById('btn-confirm-eliminar');
+  const selectAll  = document.getElementById('select-all');
 
-    const toggleCols = () => {
-      document.querySelectorAll('.seleccion-col').forEach(el => el.classList.toggle('d-none'));
-      btnEliminar.classList.toggle('d-none');
-      selectAll.checked = false;
-      document.querySelectorAll('.chk-bien').forEach(c => c.checked = false);
+  const toggleCols = () => {
+    document.querySelectorAll('.seleccion-col').forEach(el => el.classList.toggle('d-none'));
+    btnEliminar.classList.toggle('d-none');
+    if (selectAll) selectAll.checked = false;
+    document.querySelectorAll('.chk-bien').forEach(c => c.checked = false);
+    updateCount();
+  };
+
+  const updateCount = () => {
+    const n = Array.from(document.querySelectorAll('.chk-bien')).filter(c => c.checked).length;
+    btnEliminar.textContent = n > 0 ? `Eliminar (${n})` : 'Eliminar (0)';
+    btnEliminar.disabled = n === 0;
+  };
+
+  if (btnToggle) btnToggle.addEventListener('click', toggleCols);
+  if (selectAll) {
+    selectAll.addEventListener('change', function () {
+      document.querySelectorAll('.chk-bien').forEach(c => c.checked = selectAll.checked);
       updateCount();
-    };
-
-    const updateCount = () => {
-      const n = Array.from(document.querySelectorAll('.chk-bien')).filter(c => c.checked).length;
-      btnEliminar.textContent = n > 0 ? `Eliminar (${n})` : 'Eliminar (0)';
-      btnEliminar.disabled = n === 0;
-    };
-
-    btnToggle.addEventListener('click', toggleCols);
-
-    if (selectAll) {
-      selectAll.addEventListener('change', function () {
-        document.querySelectorAll('.chk-bien').forEach(c => c.checked = selectAll.checked);
-        updateCount();
-      });
-    }
-
-    document.addEventListener('change', function (e) {
-      if (e.target.classList && e.target.classList.contains('chk-bien')) {
-        updateCount();
-      }
     });
-  })();
+  }
+  document.addEventListener('change', function (e) {
+    if (e.target.classList && e.target.classList.contains('chk-bien')) updateCount();
+  });
+})();
 </script>
 {% endblock %}
+
+<script>
+(function () {
+  const $ = (sel) => document.querySelector(sel);
+  const filtros = ['f_origen','f_estado','f_desde','f_hasta'];
+  const badge = $('#filtros-count');
+  const collapse = document.getElementById('filtrosBox');
+
+  function contarActivos() {
+    let n = 0;
+    filtros.forEach(name => {
+      const el = document.querySelector(`[name="${name}"]`);
+      if (el && el.value && el.value !== '') n++;
+    });
+    if (n > 0) {
+      badge.textContent = n;
+      badge.style.display = '';
+      // abrir visualmente el collapse si hay filtros activos
+      if (collapse && !collapse.classList.contains('show')) {
+        const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapse, { toggle:false });
+        bsCollapse.show();
+      }
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  contarActivos();
+
+  // Si el usuario cambia cualquiera de los filtros, actualizamos el contador
+  filtros.forEach(name => {
+    const el = document.querySelector(`[name="${name}"]`);
+    if (el) el.addEventListener('change', contarActivos);
+  });
+})();
+</script>
+

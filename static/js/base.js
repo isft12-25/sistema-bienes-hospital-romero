@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Delegación de eventos para manejar botones dinámicos
+    // ---------------------------
+    // BOTONES DE LOGIN
+    // ---------------------------
     document.addEventListener('click', function(e) {
         if (e.target.id === 'admin-btn' || e.target.closest('#admin-btn')) {
             handleButtonClick('admin', e.target);
@@ -8,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Función para manejar el clic en los botones
     function handleButtonClick(userType, button) {
         const originalText = button.innerHTML;
         
@@ -24,7 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1500);
     }
 
-    // Efectos de hover mejorados
+    // ---------------------------
+    // EFECTOS DE HOVER LOGIN
+    // ---------------------------
     document.addEventListener('mouseover', function(e) {
         if (e.target.classList.contains('login-button')) {
             e.target.style.transform = 'translateY(-3px)';

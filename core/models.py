@@ -1,7 +1,6 @@
-# Standard library imports
+
 from datetime import date
-# Third party imports
-from django.contrib.auth.models import AbstractUser # Third party imports
+from django.contrib.auth.models import AbstractUser 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -32,16 +31,29 @@ class Expediente(models.Model):
 
 
 # Modelo principal para representar un bien patrimonial del hospital
+class Expediente(models.Model):
+    numero_expediente = models.CharField(max_length=50, unique=True)
+    organismo_origen = models.CharField(max_length=120, blank=True)
+    numero_compra = models.CharField(max_length=50, blank=True)
+    proveedor = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        verbose_name = "Expediente"
+        verbose_name_plural = "Expedientes"
+        ordering = ['numero_expediente']
+
+    def __str__(self):
+        return str(self.numero_expediente)
+
+
 class BienPatrimonial(models.Model):
-    # Estados permitidos
+    # Estado / Origen
     ESTADO_CHOICES = (
         ('ACTIVO', 'Activo'),
         ('INACTIVO', 'Inactivo'),
         ('MANTENIMIENTO', 'En mantenimiento'),
         ('BAJA', 'Dado de baja'),
     )
-
-    # Origen del bien
     ORIGEN_CHOICES = (
         ('DONACION', 'Donación'),
         ('OMISION', 'Omisión'),
@@ -49,106 +61,47 @@ class BienPatrimonial(models.Model):
         ('COMPRA', 'Compra'),
     )
 
-    # 1) Clave Única (PK autoincremental)
-    clave_unica = models.BigAutoField(
-        primary_key=True,
-        verbose_name="Clave Única",
-    )
-
-    # 2) Nombre
-    nombre = models.CharField(
-        max_length=200,
-        verbose_name="Nombre",
-    )
-
-    # 3) Descripción
-    descripcion = models.TextField(
-        verbose_name="Descripción",
-    )
-
-    # 4) Cantidad (>=1)
-    cantidad = models.PositiveIntegerField(
-        default=1,
-        validators=[MinValueValidator(1)],
-        verbose_name="Cantidad",
-    )
-
-    # 5) N° de Expediente (FK opcional)
-    expediente = models.ForeignKey(
-        'Expediente',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='bienes',
-        verbose_name="N° de Expediente",
-    )
-
-    # 6) Cuenta Código
-    cuenta_codigo = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="Cuenta Código",
-    )
-
-    # 7) Nomenclatura de Bienes
-    nomenclatura_bienes = models.CharField(
-        max_length=200,
-        blank=True,
-        verbose_name="Nomenclatura de Bienes",
-    )
-
-    # 8) Fecha de Alta
-    fecha_adquisicion = models.DateField(
-        verbose_name="Fecha de Alta",
-    )
-
-    # 9) Origen
-    origen = models.CharField(
-        max_length=15,
-        choices=ORIGEN_CHOICES,
-        default='COMPRA',
-        verbose_name="Origen",
-    )
-
-    # 10) Estado
-    estado = models.CharField(
-        max_length=50,
-        choices=ESTADO_CHOICES,
-        default='ACTIVO',
-        verbose_name="Estado",
-    )
-
-    # 11) N° de serie
-    numero_serie = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="N° de serie",
-    )
-
-    # 12) Precio (>= 0)
-    valor_adquisicion = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        null=True, 
-        blank=True,
-        verbose_name="Precio",
-    )
-
-    # 13) Número de ID (único si se informa)
+    # Identificación
+    clave_unica = models.BigAutoField(primary_key=True, verbose_name="Clave Única")
     numero_identificacion = models.CharField(
-        max_length=50,
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="Número de ID",
+        max_length=50, unique=True, null=True, blank=True, verbose_name="Número de ID"
+    )
+    numero_serie = models.CharField(max_length=100, blank=True, verbose_name="N° de serie")
+
+    # Datos principales
+    nombre = models.CharField(max_length=200, verbose_name="Nombre")  # (opcional quitar más adelante)
+    descripcion = models.TextField(verbose_name="Descripción")
+    cantidad = models.PositiveIntegerField(
+        default=1, validators=[MinValueValidator(1)], verbose_name="Cantidad"
+    )
+    expediente = models.ForeignKey(
+        'Expediente', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='bienes', verbose_name="N° de Expediente"
+    )
+    cuenta_codigo = models.CharField(max_length=20, blank=True, verbose_name="Cuenta Código")
+    nomenclatura_bienes = models.CharField(max_length=200, blank=True, verbose_name="Nomenclatura de Bienes")
+    servicios = models.CharField(max_length=200, verbose_name="Servicios")
+
+    # Situación
+    origen = models.CharField(
+        max_length=15, choices=ORIGEN_CHOICES, null=True, blank=True, verbose_name="Origen"
+    )
+    estado = models.CharField(
+        max_length=50, choices=ESTADO_CHOICES, null=True, blank=True, verbose_name="Estado"
     )
 
-    # 14) Servicios (sector/destino)
-    servicios = models.CharField(
-        max_length=200,
-        verbose_name="Servicios",
+    # Fechas
+    fecha_adquisicion = models.DateField(null=True, blank=True, verbose_name="Fecha de Alta")
+    fecha_baja = models.DateField(null=True, blank=True, verbose_name="Fecha de Baja")
+
+    # Económico
+    valor_adquisicion = models.DecimalField(
+        max_digits=12, decimal_places=2, validators=[MinValueValidator(0)],
+        null=True, blank=True, verbose_name="Precio"
     )
+
+    # Otros
+    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
 
     class Meta:
         verbose_name = "Bien Patrimonial"
@@ -157,23 +110,26 @@ class BienPatrimonial(models.Model):
         indexes = [
             models.Index(fields=['clave_unica']),
             models.Index(fields=['estado']),
+            models.Index(fields=['origen']),
         ]
 
-def clean(self):
-    # 👇 IMPORTANTE: este método debe estar INDENTADO dentro de la clase
-    super().clean()
+    def __str__(self):
+        return f"{self.clave_unica} - {self.descripcion[:50]}"
 
-    # 1) Precio no puede ser negativo (si viene informado)
-    if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
-        raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
+    def clean(self):
+        super().clean()
 
-    # 2) Fecha no puede ser futura
-    if self.fecha_adquisicion > date.today():
-        raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
+        # Precio no puede ser negativo si viene informado
+        if self.valor_adquisicion is not None and self.valor_adquisicion < 0:
+            raise ValidationError({'valor_adquisicion': 'El precio no puede ser negativo'})
 
-    # 3) Si el origen NO es compra, borramos el precio
-    if self.origen != 'COMPRA':
-        self.valor_adquisicion = None
+        # Fecha de alta no futura (si existe)
+        if self.fecha_adquisicion and self.fecha_adquisicion > date.today():
+            raise ValidationError({'fecha_adquisicion': 'La fecha no puede ser futura'})
+
+        # Si origen NO es compra -> precio vacío
+        if self.origen and self.origen != 'COMPRA':
+            self.valor_adquisicion = None
 
 class Usuario(AbstractUser):
     TIPO_USUARIO = [
