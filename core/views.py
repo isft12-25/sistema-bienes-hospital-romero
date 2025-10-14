@@ -11,6 +11,7 @@ from django.db.models import Q
 from .forms import BienPatrimonialForm
 from django.views.decorators.http import require_POST
 
+
 def inicio(request):
     """
     Vista de inicio.

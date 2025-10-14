@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 from django.http import HttpResponse
+from django.urls import path
+from . import views
 
 urlpatterns = [
     path('', views.inicio, name='inicio'),
@@ -8,10 +10,11 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
     path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
+    
 
     # Admin / Operadores
     path('home_admin/', views.home_admin, name='home_admin'),
-    path('alta_operador/', views.alta_operador, name='alta_operador'),
+    path('alta_operadores/', views.alta_operadores, name='alta_operadores'),
     path('operadores.html', views.operadores, name='operadores'),
 
     # Bienes
