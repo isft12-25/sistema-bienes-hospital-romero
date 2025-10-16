@@ -2,7 +2,6 @@ from django.contrib import admin
 from .models import BienPatrimonial, Expediente
 from sistema_bienes.admin import custom_admin_site  # Sitio de admin personalizado (en lugar del admin por defecto)
 
-
 # Registro del modelo Expediente en el admin personalizado
 @admin.register(Expediente, site=custom_admin_site)
 class ExpedienteAdmin(admin.ModelAdmin):
