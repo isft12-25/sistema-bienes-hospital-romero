@@ -88,3 +88,16 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 HOSPITAL_NAME = "Gestión de Bienes Patrimoniales - Hospital Melchor Romero"
+
+# ============================================================================
+# LOGGING BÁSICO
+# ============================================================================
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(BASE_DIR, 'logs', 'app.log')),
+        logging.StreamHandler()
+    ]
+)
