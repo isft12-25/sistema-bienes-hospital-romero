@@ -1,39 +1,144 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Editar Bien Patrimonial{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <h2>Editar Bien Patrimonial #{{ bien.pk }}</h2>
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">Editar Bien Patrimonial #{{ bien.pk }}</h3>
+    <a href="{% url 'lista_bienes' %}" class="btn btn-outline-secondary">← Volver</a>
+  </div>
 
-    <form method="post" class="mt-3">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row g-3">
+      <!-- Descripción -->
+      <div class="col-12">
+        <label class="form-label" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+        {{ form.descripcion }}
+        {% for e in form.descripcion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Cantidad -->
+      <div class="col-md-2">
+        <label class="form-label" for="{{ form.cantidad.id_for_label }}">Cantidad</label>
+        {{ form.cantidad }}
+        {% for e in form.cantidad.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Expediente -->
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.expediente.id_for_label }}">N° de Expediente</label>
+        {{ form.expediente }}
+        {% for e in form.expediente.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Cuenta código / Nomenclatura -->
+      <div class="col-md-3">
+        <label class="form-label" for="{{ form.cuenta_codigo.id_for_label }}">Cuenta Código</label>
+        {{ form.cuenta_codigo }}
+        {% for e in form.cuenta_codigo.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="{{ form.nomenclatura_bienes.id_for_label }}">Nomenclatura de Bienes</label>
+        {{ form.nomenclatura_bienes }}
+        {% for e in form.nomenclatura_bienes.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Identificación -->
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.numero_serie.id_for_label }}">N° de Serie</label>
+        {{ form.numero_serie }}
+        {% for e in form.numero_serie.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="{{ form.numero_identificacion.id_for_label }}">N° de ID</label>
+        {{ form.numero_identificacion }}
+        {% for e in form.numero_identificacion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Origen / Estado / Servicios -->
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.origen.id_for_label }}">Origen</label>
+        {{ form.origen }}
+        {% for e in form.origen.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.estado.id_for_label }}">Estado</label>
+        {{ form.estado }}
+        {% for e in form.estado.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.servicios.id_for_label }}">Servicios / Sector</label>
+        {{ form.servicios }}
+        {% for e in form.servicios.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Observaciones -->
+      <div class="col-12">
+        <label class="form-label" for="{{ form.observaciones.id_for_label }}">Observaciones</label>
+        {{ form.observaciones }}
+        {% for e in form.observaciones.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Precio (solo si Origen = COMPRA) -->
+      {# Ocultamos de entrada si el bien NO es de COMPRA para evitar flash #}
+      <div class="col-md-4 {% if bien.origen != 'COMPRA' %}d-none{% endif %}" id="grupo-precio">
+        <label class="form-label" for="{{ form.valor_adquisicion.id_for_label }}">Precio</label>
+        {{ form.valor_adquisicion }}
+        {% for e in form.valor_adquisicion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <!-- Fechas -->
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.fecha_adquisicion.id_for_label }}">Fecha de Alta</label>
+        {{ form.fecha_adquisicion }}
+        {% for e in form.fecha_adquisicion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.fecha_baja.id_for_label }}">Fecha de Baja</label>
+        {{ form.fecha_baja }}
+        {% for e in form.fecha_baja.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-success">
+        <i class="fas fa-save me-1"></i> Guardar
+      </button>
+      <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const origenSelect = document.getElementById('id_origen');
-    const campoPrecio = document.getElementById('id_valor_adquisicion').closest('p');
-
-    function toggleCampoPrecio() {
-        if (origenSelect.value === 'COMPRA') {
-            campoPrecio.style.display = '';
-        } else {
-            campoPrecio.style.display = 'none';
-            document.getElementById('id_valor_adquisicion').value = '';
-        }
-    }
-
-    if (origenSelect && campoPrecio) {
-        origenSelect.addEventListener('change', toggleCampoPrecio);
-        toggleCampoPrecio();
-    }
-});
-</script>
-
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+  // Mostrar/ocultar precio según origen = COMPRA
+  const origen = document.getElementById('id_origen');
+  const grupoPrecio = document.getElementById('grupo-precio');
+  const inputPrecio = document.getElementById('id_valor_adquisicion');
+
+  function togglePrecio() {
+    const v = (origen?.value || '').toUpperCase();
+    if (v === 'COMPRA') {
+      grupoPrecio?.classList.remove('d-none');
+    } else {
+      grupoPrecio?.classList.add('d-none');
+      if (inputPrecio) inputPrecio.value = '';
+    }
+  }
+
+  togglePrecio();                  // estado inicial
+  origen?.addEventListener('change', togglePrecio);
+})();
+</script>
+{% endblock %}

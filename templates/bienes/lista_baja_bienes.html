@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Bienes Dados de Baja{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">Bienes — Dados de Baja</h3>
+    <div class="d-flex gap-2">
+      <a class="btn btn-success" href="{% url 'bienes' %}">
+        <i class="fa-solid fa-plus me-1"></i> Cargar bien 
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">
+        <i class="fas fa-arrow-left me-1"></i> Volver a lista de bienes
+      </a>
+    </div>
+  </div>
+
+  <!-- BÚSQUEDA / ORDEN -->
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+      <label class="form-label">Buscar</label>
+      <input type="search" name="q" value="{{ request.GET.q }}" class="form-control"
+             placeholder="Descripción, ID, servicio...">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Ordenar</label>
+      <select name="orden" class="form-select">
+        <option value="-fecha_baja" {% if request.GET.orden == "-fecha_baja" %}selected{% endif %}>Bajas más recientes</option>
+        <option value="fecha_baja"  {% if request.GET.orden == "fecha_baja" %}selected{% endif %}>Bajas más antiguas</option>
+        <option value="-precio"     {% if request.GET.orden == "-precio" %}selected{% endif %}>Precio ↓</option>
+        <option value="precio"      {% if request.GET.orden == "precio" %}selected{% endif %}>Precio ↑</option>
+      </select>
+    </div>
+
+    <div class="col-auto d-flex align-items-end gap-2">
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-search me-1"></i> Buscar
+      </button>
+      <a class="btn btn-outline-secondary" href="{% url 'lista_baja_bienes' %}">Limpiar</a>
+    </div>
+
+    <div class="col-12 mt-2 text-muted">
+      {% if request.GET.q %}Mostrando resultados para: <strong>{{ request.GET.q }}</strong> · {% endif %}
+      Total: {{ bienes|length }}
+    </div>
+  </form>
+
+  <!-- TABLA -->
+  <div class="table-responsive">
+    <table class="table table-sm table-bordered align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th>Clave Única</th>
+          <th>N° de ID</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <!-- NUEVO: mantenemos el expediente original -->
+          <th>N° de Expediente</th>
+          <!-- El de baja queda aparte -->
+          <th>Expediente Baja</th>
+          <th>N° de Compra</th>
+          <th>Cuenta Código</th>
+          <th>Nomenclatura de Bienes</th>
+          <th>N° de Serie</th>
+          <th>Origen</th>
+          <th>Estado</th>
+          <th>Servicios</th>
+          <th>Observaciones</th>
+          <th>Descripción de Baja</th>
+          <th>Precio</th>
+          <th>Fecha de Alta</th>
+          <th>Fecha de Baja</th>
+          <th class="text-nowrap">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bienes %}
+        <tr>
+          <td class="text-nowrap">{{ b.clave_unica }}</td>
+          <td class="text-nowrap">{{ b.numero_identificacion|default:"—" }}</td>
+          <td style="min-width:260px;">{{ b.descripcion }}</td>
+          <td class="text-center">{{ b.cantidad }}</td>
+
+          <!-- Expediente original (de la carga/relación) -->
+          <td class="text-nowrap">{{ b.expediente.numero_expediente|default:"—" }}</td>
+
+          <!-- Expediente de Baja (campo de baja) -->
+          <td class="text-nowrap">{{ b.expediente_baja|default:"—" }}</td>
+
+          <td class="text-nowrap">{{ b.expediente.numero_compra|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.cuenta_codigo|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.nomenclatura_bienes|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.numero_serie|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.get_origen_display|default:b.origen|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.get_estado_display|default:b.estado|default:"—" }}</td>
+          <td class="text-nowrap">{{ b.servicios|default:"—" }}</td>
+
+          <td style="min-width:220px;">{{ b.observaciones|default:"—" }}</td>
+          <td style="min-width:220px;">{{ b.descripcion_baja|default:"—" }}</td>
+
+          <td class="text-end">
+            {% if b.valor_adquisicion %}
+              ${{ b.valor_adquisicion|floatformat:0|intcomma }}
+            {% else %}
+              — 
+            {% endif %}
+          </td>
+          <td class="text-nowrap">
+            {% if b.fecha_adquisicion %}{{ b.fecha_adquisicion|date:"d/m/Y" }}{% else %}—{% endif %}
+          </td>
+          <td class="text-nowrap">
+            {% if b.fecha_baja %}{{ b.fecha_baja|date:"d/m/Y" }}{% else %}—{% endif %}
+          </td>
+
+          <td class="text-center text-nowrap">
+            <!-- Restablecer (POST) -->
+            <form method="post" action="{% url 'restablecer_bien' b.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-success" title="Restablecer a ACTIVO"
+                      onclick="return confirm('¿Restablecer este bien a ACTIVO?');">
+                <i class="fas fa-undo"></i>
+              </button>
+            </form>
+
+            <!-- Eliminar definitivo (POST) -->
+            <form method="post" action="{% url 'eliminar_bien_definitivo' b.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger" title="Eliminar definitivamente"
+                      onclick="return confirm('Esta acción no se puede deshacer. ¿Eliminar DEFINITIVAMENTE?');">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="19" class="text-center text-muted py-4">No hay bienes dados de baja.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

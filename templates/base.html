@@ -34,12 +34,13 @@
         {% include 'includes/footer.html' %}
     {% endblock %}
 
-    <!-- Bootstrap local -->
+    <!-- Bootstrap (solo UNO, no dupliques el bundle) -->
     <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <!-- JS global -->
     <script src="{% static 'js/base.js' %}"></script>
+
     {% block extra_js %}{% endblock %}
+
 </body>
 </html>
-

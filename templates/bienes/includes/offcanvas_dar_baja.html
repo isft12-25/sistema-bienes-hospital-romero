@@ -1,0 +1,57 @@
+<!-- OFFCANVAS DAR BAJA -->
+<div class="offcanvas offcanvas-end shadow-lg" tabindex="-1" id="offcanvasDarBaja" aria-labelledby="offcanvasDarBajaLabel">
+  <div class="offcanvas-header bg-danger text-white">
+    <h5 class="offcanvas-title d-flex align-items-center" id="offcanvasDarBajaLabel">
+      <i class="fas fa-trash-alt me-2"></i> Dar de baja el bien
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <form id="form-dar-baja" method="post" action="" class="needs-validation" novalidate>
+      {% csrf_token %}
+
+      <!-- Bien seleccionado -->
+      <div class="alert alert-secondary small mb-4" id="dar-baja-desc" style="white-space: pre-wrap;">
+        <i class="fas fa-box-open me-1"></i> Bien seleccionado: <em>(sin descripción)</em>
+      </div>
+
+      <!-- Fecha de baja -->
+      <div class="mb-3">
+        <label for="fecha_baja" class="form-label fw-semibold">
+          <i class="far fa-calendar-alt me-1 text-danger"></i> Fecha de baja
+        </label>
+        <input type="date" class="form-control" name="fecha_baja" id="fecha_baja" required>
+        <div class="invalid-feedback">Por favor seleccione una fecha válida.</div>
+      </div>
+
+      <!-- Expediente Baja -->
+      <div class="mb-3">
+        <label for="expediente_baja" class="form-label fw-semibold">
+          <i class="fas fa-file-alt me-1 text-danger"></i> Expediente Baja
+        </label>
+        <input type="text" class="form-control" name="expediente_baja" id="expediente_baja"
+               placeholder="Ej: EX-2025-00012345">
+      </div>
+
+      <!-- Descripción de baja -->
+      <div class="mb-4">
+        <label for="descripcion_baja" class="form-label fw-semibold">
+          <i class="fas fa-comment-dots me-1 text-danger"></i> Descripción de baja
+        </label>
+        <textarea class="form-control" name="descripcion_baja" id="descripcion_baja" rows="3"
+                  placeholder="Motivo, reparaciones, destino, etc."></textarea>
+      </div>
+
+      <!-- Botones -->
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">
+          <i class="fas fa-times me-1"></i> Cancelar
+        </button>
+        <button type="submit" class="btn btn-danger">
+          <i class="fas fa-check me-1"></i> Confirmar baja
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

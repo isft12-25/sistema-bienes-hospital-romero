@@ -7,93 +7,109 @@
 {% block content %}
 <div class="container-fluid py-3">
 
-<!-- BÚSQUEDA + BOTONES -->
-<form method="get" class="row g-2 align-items-end mb-3">
-  <div class="col-md-4">
-    <label class="form-label">Buscar</label>
-    <input type="search" name="q" value="{{ q }}" class="form-control"
-           placeholder="Descripción, ID, servicio...">
-  </div>
+  <!-- BÚSQUEDA + BOTONES -->
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+      <label class="form-label">Buscar</label>
+      <input type="search" name="q" value="{{ q }}" class="form-control"
+             placeholder="Descripción, ID, servicio...">
+    </div>
 
-  <div class="col-md-2">
-    <label class="form-label">Ordenar</label>
-    <select name="orden" class="form-select">
-      <option value="-fecha"  {% if request.GET.orden == "-fecha" %}selected{% endif %}>Más recientes</option>
-      <option value="fecha"   {% if request.GET.orden == "fecha" %}selected{% endif %}>Más antiguos</option>
-      <option value="-precio" {% if request.GET.orden == "-precio" %}selected{% endif %}>Precio ↓</option>
-      <option value="precio"  {% if request.GET.orden == "precio" %}selected{% endif %}>Precio ↑</option>
-    </select>
-  </div>
+    <div class="col-md-2">
+      <label class="form-label">Ordenar</label>
+      <select name="orden" class="form-select">
+        <option value="-fecha"  {% if request.GET.orden == "-fecha" %}selected{% endif %}>Más recientes</option>
+        <option value="fecha"   {% if request.GET.orden == "fecha" %}selected{% endif %}>Más antiguos</option>
+        <option value="-precio" {% if request.GET.orden == "-precio" %}selected{% endif %}>Precio ↓</option>
+        <option value="precio"  {% if request.GET.orden == "precio" %}selected{% endif %}>Precio ↑</option>
+      </select>
+    </div>
 
-  <!-- Botones principales -->
-  <div class="col-auto d-flex align-items-end gap-2">
-    <button class="btn btn-primary" type="submit">
-      <i class="fas fa-search me-1"></i> Buscar
-    </button>
-    <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">Limpiar</a>
-    <a class="btn btn-success" href="{% url 'carga_masiva' %}">
-      <i class="fas fa-file-excel me-1"></i> Carga masiva
-    </a>
+    <!-- BOTONES PRINCIPALES -->
+    <div class="col-auto d-flex align-items-end gap-2">
+      <button class="btn btn-primary" type="submit">
+        <i class="fas fa-search me-1"></i> Buscar
+      </button>
+      <a class="btn btn-outline-secondary" href="{% url 'lista_bienes' %}">Limpiar</a>
+      <a class="btn btn-success" href="{% url 'carga_masiva' %}">
+        <i class="fas fa-file-excel me-1"></i> Carga masiva
+      </a>
+      <a class="btn btn-success" href="{% url 'bienes' %}">
+        <i class="fa-solid fa-plus me-1"></i> Cargar bien
+      </a>
+      <!-- Filtros -->
+      <button class="btn btn-outline-primary" type="button"
+              data-bs-toggle="collapse" data-bs-target="#filtrosBox"
+              aria-expanded="false" aria-controls="filtrosBox" id="btn-filtros">
+        <i class="fas fa-sliders-h me-1"></i> Filtros
+      </button>
+    </div>
 
-    <!-- Nuevo: botón para desplegar filtros -->
-    <button class="btn btn-outline-primary" type="button"
-            data-bs-toggle="collapse" data-bs-target="#filtrosBox"
-            aria-expanded="false" aria-controls="filtrosBox" id="btn-filtros">
-      <i class="fas fa-sliders-h me-1"></i> Filtros
-      <span class="badge bg-primary ms-1" id="filtros-count" style="display:none;">0</span>
-    </button>
-  </div>
+    <!-- CONTROLES DERECHA -->
+    <div class="col ms-auto d-flex align-items-end justify-content-end gap-2">
+      <button type="button" id="btn-toggle-seleccion" class="btn btn-outline-danger">
+        <i class="fas fa-check-square me-1"></i> Eliminar seleccionados
+      </button>
 
-  <!-- Caja colapsable de filtros -->
-  <div class="col-12 collapse mt-3" id="filtrosBox">
-    <div class="row g-2">
-      <div class="col-md-3">
-        <label class="form-label">Origen</label>
-        <select name="f_origen" class="form-select">
-          <option value="">Todos</option>
-          <option value="COMPRA"        {% if request.GET.f_origen == "COMPRA" %}selected{% endif %}>Compra</option>
-          <option value="DONACION"      {% if request.GET.f_origen == "DONACION" %}selected{% endif %}>Donación</option>
-          <option value="OMISION"       {% if request.GET.f_origen == "OMISION" %}selected{% endif %}>Omisión</option>
-          <option value="TRANSFERENCIA" {% if request.GET.f_origen == "TRANSFERENCIA" %}selected{% endif %}>Transferencia/Traslado</option>
-          <option value="__NULL__"      {% if request.GET.f_origen == "__NULL__" %}selected{% endif %}>Sin origen</option>
-        </select>
-      </div>
+      <button type="submit" id="btn-confirm-eliminar"
+              form="form-eliminar-bienes"
+              class="btn btn-danger d-none" disabled>
+        <i class="fas fa-trash me-1"></i> Eliminar (0)
+      </button>
 
-      <div class="col-md-3">
-        <label class="form-label">Estado</label>
-        <select name="f_estado" class="form-select">
-          <option value="">Todos</option>
-          <option value="ACTIVO"        {% if request.GET.f_estado == "ACTIVO" %}selected{% endif %}>Activo</option>
-          <option value="INACTIVO"      {% if request.GET.f_estado == "INACTIVO" %}selected{% endif %}>Inactivo</option>
-          <option value="MANTENIMIENTO" {% if request.GET.f_estado == "MANTENIMIENTO" %}selected{% endif %}>En mantenimiento</option>
-          <option value="BAJA"          {% if request.GET.f_estado == "BAJA" %}selected{% endif %}>Dado de baja</option>
-          <option value="__NULL__"      {% if request.GET.f_estado == "__NULL__" %}selected{% endif %}>Sin estado</option>
-        </select>
-      </div>
+      <a class="btn btn-dark" href="{% url 'lista_baja_bienes' %}" title="Ver bienes dados de baja">
+        <i class="fas fa-trash-alt"></i>
+      </a>
+    </div>
 
-      <div class="col-md-3">
-        <label class="form-label">Desde (Alta)</label>
-        <input type="date" name="f_desde" class="form-control" value="{{ request.GET.f_desde }}">
-      </div>
+    <!-- FILTROS -->
+    <div class="col-12 collapse mt-3" id="filtrosBox">
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label">Origen</label>
+          <select name="f_origen" class="form-select">
+            <option value="">Todos</option>
+            <option value="COMPRA" {% if request.GET.f_origen == "COMPRA" %}selected{% endif %}>Compra</option>
+            <option value="DONACION" {% if request.GET.f_origen == "DONACION" %}selected{% endif %}>Donación</option>
+            <option value="OMISION" {% if request.GET.f_origen == "OMISION" %}selected{% endif %}>Omisión</option>
+            <option value="TRANSFERENCIA" {% if request.GET.f_origen == "TRANSFERENCIA" %}selected{% endif %}>Transferencia</option>
+            <option value="__NULL__" {% if request.GET.f_origen == "__NULL__" %}selected{% endif %}>Sin origen</option>
+          </select>
+        </div>
 
-      <div class="col-md-3">
-        <label class="form-label">Hasta (Alta)</label>
-        <input type="date" name="f_hasta" class="form-control" value="{{ request.GET.f_hasta }}">
+        <div class="col-md-3">
+          <label class="form-label">Estado</label>
+          <select name="f_estado" class="form-select">
+            <option value="">Todos</option>
+            <option value="ACTIVO" {% if request.GET.f_estado == "ACTIVO" %}selected{% endif %}>Activo</option>
+            <option value="INACTIVO" {% if request.GET.f_estado == "INACTIVO" %}selected{% endif %}>Inactivo</option>
+            <option value="MANTENIMIENTO" {% if request.GET.f_estado == "MANTENIMIENTO" %}selected{% endif %}>Mantenimiento</option>
+            <option value="BAJA" {% if request.GET.f_estado == "BAJA" %}selected{% endif %}>Baja</option>
+            <option value="__NULL__" {% if request.GET.f_estado == "__NULL__" %}selected{% endif %}>Sin estado</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Desde (Alta)</label>
+          <input type="date" name="f_desde" class="form-control" value="{{ request.GET.f_desde }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Hasta (Alta)</label>
+          <input type="date" name="f_hasta" class="form-control" value="{{ request.GET.f_hasta }}">
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- info total -->
-  <div class="col-12 mt-2 text-muted">
-    {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
-    Total: {{ bienes|length }}
-  </div>
-</form>
+    <div class="col-12 mt-2 text-muted">
+      {% if q %}Mostrando resultados para: <strong>{{ q }}</strong> · {% endif %}
+      Total: {{ bienes|length }}
+    </div>
+  </form>
 
-  <!-- ELIMINACIÓN MÚLTIPLE -->
+  <!-- TABLA DE BIENES -->
   <form id="form-eliminar-bienes" method="post" action="{% url 'eliminar_bienes_seleccionados' %}">
     {% csrf_token %}
-
     <div class="table-responsive">
       <table id="tabla-bienes" class="table table-sm table-bordered align-middle">
         <thead class="table-light text-center">
@@ -102,23 +118,21 @@
               <input type="checkbox" id="select-all" class="form-check-input">
             </th>
             <th>Clave Única</th>
-            <th>N de ID</th>
+            <th>N° ID</th>
             <th>Descripción</th>
             <th>Cantidad</th>
-            <th>N de Expediente</th>
-            <th>N de Compra</th>
+            <th>Expediente</th>
+            <th>N° Compra</th>
             <th>Cuenta Código</th>
-            <th>Nomenclatura de Bienes</th>
-            <th>N de Serie</th>
+            <th>Nomenclatura</th>
+            <th>N° Serie</th>
             <th>Origen</th>
             <th>Estado</th>
             <th>Servicios</th>
             <th>Observaciones</th>
             <th>Precio</th>
-            <th>Fecha de Alta</th>
-            <th>Fecha de Baja</th>
-            <th class="text-nowrap">Editar</th>
-            <th class="text-nowrap">Eliminar</th>
+            <th>Fecha Alta</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -142,102 +156,106 @@
             <td class="text-nowrap">{{ b.servicios|default:"—" }}</td>
             <td style="min-width:220px;">{{ b.observaciones|default:"—" }}</td>
             <td class="text-end">
-              {% if b.valor_adquisicion %}${{ b.valor_adquisicion|floatformat:0|intcomma }}{% else %}—{% endif %}
+              {% if b.valor_adquisicion %}
+                ${{ b.valor_adquisicion|floatformat:0|intcomma }}
+              {% else %}
+                —
+              {% endif %}
             </td>
-            <td class="text-nowrap">{% if b.fecha_adquisicion %}{{ b.fecha_adquisicion|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-            <td class="text-nowrap">{% if b.fecha_baja %}{{ b.fecha_baja|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+            <td class="text-nowrap">
+              {% if b.fecha_adquisicion %}
+                {{ b.fecha_adquisicion|date:"d/m/Y" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
 
-            <td class="text-center">
-              <a class="btn btn-sm btn-info" href="{% url 'editar_bien' b.pk %}">
+            <td class="text-center text-nowrap">
+              <a class="btn btn-sm btn-info" href="{% url 'editar_bien' b.pk %}" title="Editar">
                 <i class="fas fa-pen"></i>
               </a>
-            </td>
-            <td class="text-center">
-              <a class="btn btn-sm btn-danger"
-                 href="{% url 'eliminar_bien' b.pk %}"
-                 onclick="return confirm('¿Eliminar este bien?');">
-                <i class="fas fa-trash"></i>
+              <a href="#"
+                 class="btn btn-sm btn-danger ms-1 btn-dar-baja"
+                 data-pk="{{ b.pk }}"
+                 data-action="{% url 'dar_baja_bien' b.pk %}"
+                 data-descripcion="{{ b.descripcion|escapejs }}"
+                 data-bs-toggle="offcanvas"
+                 data-bs-target="#offcanvasDarBaja"
+                 title="Dar de baja">
+                 <i class="fas fa-trash"></i>
               </a>
             </td>
           </tr>
           {% empty %}
-          <tr>
-            <td colspan="19" class="text-center text-muted py-4">No hay bienes para mostrar.</td>
-          </tr>
+          <tr><td colspan="17" class="text-center text-muted py-4">No hay bienes para mostrar.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </form>
-</div>
 
-<!-- JS selección múltiple (solo esto, sin nada de resize) -->
+  {% include 'bienes/includes/offcanvas_dar_baja.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 (function () {
+  // Selección múltiple
   const btnToggle = document.getElementById('btn-toggle-seleccion');
   const btnEliminar = document.getElementById('btn-confirm-eliminar');
   const selectAll  = document.getElementById('select-all');
 
+  const updateCount = () => {
+    const n = Array.from(document.querySelectorAll('.chk-bien')).filter(c => c.checked).length;
+    if (btnEliminar) {
+      btnEliminar.textContent = n > 0 ? `Eliminar (${n})` : 'Eliminar (0)';
+      btnEliminar.disabled = n === 0;
+    }
+  };
+
   const toggleCols = () => {
     document.querySelectorAll('.seleccion-col').forEach(el => el.classList.toggle('d-none'));
-    btnEliminar.classList.toggle('d-none');
+    if (btnEliminar) btnEliminar.classList.toggle('d-none');
     if (selectAll) selectAll.checked = false;
     document.querySelectorAll('.chk-bien').forEach(c => c.checked = false);
     updateCount();
   };
 
-  const updateCount = () => {
-    const n = Array.from(document.querySelectorAll('.chk-bien')).filter(c => c.checked).length;
-    btnEliminar.textContent = n > 0 ? `Eliminar (${n})` : 'Eliminar (0)';
-    btnEliminar.disabled = n === 0;
-  };
-
   if (btnToggle) btnToggle.addEventListener('click', toggleCols);
   if (selectAll) {
-    selectAll.addEventListener('change', function () {
+    selectAll.addEventListener('change', () => {
       document.querySelectorAll('.chk-bien').forEach(c => c.checked = selectAll.checked);
       updateCount();
     });
   }
-  document.addEventListener('change', function (e) {
+  document.addEventListener('change', e => {
     if (e.target.classList && e.target.classList.contains('chk-bien')) updateCount();
+  });
+
+  // Preparar OFFCANVAS
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-dar-baja');
+    if (!btn) return;
+    e.preventDefault();
+
+    const form = document.getElementById('form-dar-baja');
+    if (form) form.action = btn.getAttribute('data-action') || '';
+
+    const info = document.getElementById('dar-baja-desc');
+    if (info) info.textContent = (btn.getAttribute('data-descripcion') || '');
+
+    const hoy = new Date().toISOString().slice(0,10);
+    const f = document.getElementById('fecha_baja');       if (f) f.value = hoy;
+    const exp = document.getElementById('expediente_baja'); if (exp) exp.value = '';
+    const d = document.getElementById('descripcion_baja');  if (d) d.value = '';
+
+    const offcanvasEl = document.getElementById('offcanvasDarBaja');
+    if (offcanvasEl) {
+      const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+      offcanvas.show();
+    }
   });
 })();
 </script>
 {% endblock %}
-
-<script>
-(function () {
-  const $ = (sel) => document.querySelector(sel);
-  const filtros = ['f_origen','f_estado','f_desde','f_hasta'];
-  const badge = $('#filtros-count');
-  const collapse = document.getElementById('filtrosBox');
-
-  function contarActivos() {
-    let n = 0;
-    filtros.forEach(name => {
-      const el = document.querySelector(`[name="${name}"]`);
-      if (el && el.value && el.value !== '') n++;
-    });
-    if (n > 0) {
-      badge.textContent = n;
-      badge.style.display = '';
-      // abrir visualmente el collapse si hay filtros activos
-      if (collapse && !collapse.classList.contains('show')) {
-        const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapse, { toggle:false });
-        bsCollapse.show();
-      }
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-  contarActivos();
-
-  // Si el usuario cambia cualquiera de los filtros, actualizamos el contador
-  filtros.forEach(name => {
-    const el = document.querySelector(`[name="${name}"]`);
-    if (el) el.addEventListener('change', contarActivos);
-  });
-})();
-</script>
-

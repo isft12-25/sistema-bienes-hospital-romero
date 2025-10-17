@@ -1,130 +1,168 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Bienes Patrimoniales{% endblock %}
+{% block title %}Bienes Patrimoniales — Alta individual{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/bienes.css' %}">
+<link rel="stylesheet" href="{% static 'libs/fontawesome/css/all.min.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="titulo-operadores">
-  <h2>BIENES PATRIMONIALES</h2>
-</div>
+<div class="container py-3">
 
-<!-- Toolbar -->
-<div class="toolbar">
-  <form method="get" style="flex: 1; display: flex; gap: 5px;">
-    <input type="text" name="q" placeholder="Buscar..." value="{{ request.GET.q }}">
-    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-  </form>
-</div>
+  <!-- Título + accesos -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Alta de Bien Patrimonial</h2>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-primary" href="{% url 'lista_bienes' %}">
+        <i class="fa-solid fa-list me-1"></i> Ver lista de bienes
+      </a>
+      <a class="btn btn-dark" href="{% url 'lista_baja_bienes' %}">
+        <i class="fa-solid fa-trash-can me-1"></i> Ver bienes de baja
+      </a>
+    </div>
+  </div>
 
-<!-- Tabla -->
-<div class="tabla-operadores-container">
-  <table class="tabla-operadores">
-    <thead>
-      <tr>
-        <th>Descripción</th>
-        <th>Cantidad</th>
-        <th>N° Expediente</th>
-        <th>N° Compra</th>
-        <th>Origen</th>
-        <th>Fecha</th>
-        <th>Precio</th>
-        <th>ID</th>
-        <th>Servicio</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Fila de alta -->
-      <tr>
-        <form method="post" action="{% url 'bienes' %}">
-          {% csrf_token %}
-          <td>{{ form.descripcion }}</td>
-          <td>{{ form.cantidad }}</td>
-          <td>{{ form.expediente }}</td>
-          <td>{{ form.compra }}</td>
-          <td>{{ form.origen }}</td>
-          <td>{{ form.fecha }}</td>
-          <td>{{ form.precio }}</td>
-          <td>{{ form.identificador }}</td>
-          <td>{{ form.servicio }}</td>
-          <td>
-            <button type="submit" class="btn-guardar">➕ Alta</button>
-          </td>
-        </form>
-      </tr>
+  <!-- Barra de acciones -->
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a class="btn btn-warning" href="{% url 'carga_masiva' %}">
+      <i class="fa-solid fa-file-import me-1"></i> Carga masiva
+    </a>
+  </div>
 
-      <!-- Filas de bienes -->
-      {% for bien in bienes %}
-      {% if bien.id == editar_id %}
-      <!-- Fila en modo edición -->
-      <tr>
-        <form method="post" action="{% url 'bien_update' bien.id %}">
-          {% csrf_token %}
-          <td>{{ form.descripcion }}</td>
-          <td>{{ form.cantidad }}</td>
-          <td>{{ form.expediente }}</td>
-          <td>{{ form.compra }}</td>
-          <td>{{ form.origen }}</td>
-          <td>{{ form.fecha }}</td>
-          <td>{{ form.precio }}</td>
-          <td>{{ form.identificador }}</td>
-          <td>{{ form.servicio }}</td>
-          <td>
-            <button type="submit" class="btn-guardar">💾 Guardar</button>
-            <a href="{% url 'bienes_list' %}" class="btn-cancelar">Cancelar</a>
-          </td>
-        </form>
-      </tr>
-      {% else %}
-      <!-- Fila normal -->
-      <tr>
-        <td>{{ Nombres }}</td>
-        <td>{{ bien.descripcion }}</td>
-        <td>{{ bien.cantidad }}</td>
-        <td>{{ bien.expediente }}</td>
-        <td>{{ bien.compra }}</td>
-        <td>{{ bien.origen }}</td>
-        <td>{{ bien.fecha|date:"d/m/Y" }}</td>
-        <td>${{ bien.precio }}</td>
-        <td>{{ bien.identificador }}</td>
-        <td>{{ bien.servicio }}</td>
-        <td>
-          <a href="{% url 'bien_update' bien.id %}" class="btn-editar"><i class="fa-solid fa-pen"></i></a>
-          <a href="{% url 'bien_delete' bien.id %}" class="btn-eliminar"><i class="fa-solid fa-trash"></i></a>
-        </td>
-      </tr>
-      {% endif %}
-      {% empty %}
-      <tr>
-        <td colspan="10">No hay bienes registrados.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <!-- FORMULARIO DE ALTA -->
+  <div class="card shadow-sm" id="form-alta">
+    <div class="card-header bg-primary text-white">
+      <i class="fa-solid fa-plus me-2"></i> Nuevo bien
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3">
+          <!-- Descripción -->
+          <div class="col-12">
+            <label class="form-label" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+            {{ form.descripcion }}
+            {% for e in form.descripcion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Cantidad -->
+          <div class="col-md-2">
+            <label class="form-label" for="{{ form.cantidad.id_for_label }}">Cantidad</label>
+            {{ form.cantidad }}
+            {% for e in form.cantidad.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Expediente -->
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.expediente.id_for_label }}">N° de Expediente</label>
+            {{ form.expediente }}
+            {% for e in form.expediente.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Cuenta código / Nomenclatura -->
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.cuenta_codigo.id_for_label }}">Cuenta Código</label>
+            {{ form.cuenta_codigo }}
+            {% for e in form.cuenta_codigo.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.nomenclatura_bienes.id_for_label }}">Nomenclatura de Bienes</label>
+            {{ form.nomenclatura_bienes }}
+            {% for e in form.nomenclatura_bienes.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Identificación -->
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.numero_serie.id_for_label }}">N° de Serie</label>
+            {{ form.numero_serie }}
+            {% for e in form.numero_serie.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.numero_identificacion.id_for_label }}">N° de ID</label>
+            {{ form.numero_identificacion }}
+            {% for e in form.numero_identificacion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Origen / Estado / Servicios -->
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.origen.id_for_label }}">Origen</label>
+            {{ form.origen }}
+            {% for e in form.origen.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.estado.id_for_label }}">Estado</label>
+            {{ form.estado }}
+            {% for e in form.estado.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.servicios.id_for_label }}">Servicios / Sector</label>
+            {{ form.servicios }}
+            {% for e in form.servicios.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label" for="{{ form.observaciones.id_for_label }}">Observaciones</label>
+            {{ form.observaciones }}
+            {% for e in form.observaciones.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Precio (solo COMPRA) -->
+          <div class="col-md-4" id="grupo-precio">
+            <label class="form-label" for="{{ form.valor_adquisicion.id_for_label }}">Precio</label>
+            {{ form.valor_adquisicion }}
+            {% for e in form.valor_adquisicion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Fechas -->
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.fecha_adquisicion.id_for_label }}">Fecha de Alta</label>
+            {{ form.fecha_adquisicion }}
+            {% for e in form.fecha_adquisicion.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-1"></i> Guardar bien
+          </button>
+          <a href="{% url 'lista_bienes' %}" class="btn btn-secondary">
+            Ir a lista
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const origenSelect = document.getElementById('id_origen');
-    const campoPrecio = document.querySelector('[name="precio"]').closest('td');
+  // Ocultar "Precio" si Origen ≠ COMPRA
+  (function () {
+    const origen = document.getElementById('id_origen');
+    const grupoPrecio = document.getElementById('grupo-precio');
+    const inputPrecio = document.getElementById('id_valor_adquisicion');
 
-    function toggleCampoPrecio() {
-        const valor = origenSelect.value;
-        if (valor === 'COMPRA') {
-            campoPrecio.style.display = '';
-        } else {
-            campoPrecio.style.display = 'none';
-            document.querySelector('[name="precio"]').value = '';
-        }
+    function togglePrecio() {
+      const v = (origen?.value || '').toUpperCase();
+      if (v === 'COMPRA') {
+        grupoPrecio?.classList.remove('d-none');
+        if (inputPrecio) inputPrecio.disabled = false;
+      } else {
+        grupoPrecio?.classList.add('d-none');
+        if (inputPrecio) { inputPrecio.value = ''; inputPrecio.disabled = true; }
+      }
     }
-
-    if (origenSelect && campoPrecio) {
-        origenSelect.addEventListener('change', toggleCampoPrecio);
-        toggleCampoPrecio();
-    }
-});
+    togglePrecio();
+    origen?.addEventListener('change', togglePrecio);
+  })();
 </script>
 {% endblock %}

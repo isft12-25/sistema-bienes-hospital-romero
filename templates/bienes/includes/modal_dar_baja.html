@@ -1,0 +1,37 @@
+<!-- Offcanvas Dar Baja -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDarBaja" aria-labelledby="offcanvasDarBajaLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasDarBajaLabel">Dar de baja el bien</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <p class="small text-muted mb-2">Bien seleccionado:</p>
+    <div id="dar-baja-desc" class="mb-3 fw-semibold"></div>
+
+    <form id="form-dar-baja" method="post" action="">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label for="fecha_baja" class="form-label">Fecha de baja</label>
+        <input type="date" name="fecha_baja" id="fecha_baja" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="expediente_baja" class="form-label">Expediente Baja</label>
+        <input type="text" name="expediente_baja" id="expediente_baja" class="form-control" placeholder="Ej: EX-2025-00012345">
+      </div>
+
+      <div class="mb-3">
+        <label for="descripcion_baja" class="form-label">Descripción de baja</label>
+        <textarea name="descripcion_baja" id="descripcion_baja" rows="3" class="form-control" placeholder="Motivo, reparaciones, destino, etc."></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">Cancelar</button>
+        <!-- IMPORTANTE: type=submit para que haga POST y redireccione -->
+        <button type="submit" class="btn btn-danger">Confirmar baja</button>
+      </div>
+    </form>
+  </div>
+</div>
