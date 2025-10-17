@@ -1,9 +1,32 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends 'base.html' %}
 {% block title %}Reportes{% endblock %}
 {% block content %}
-<div class="container py-5 text-center">
-    <h2>Reportes</h2>
-    <p>Esta sección estará disponible próximamente.</p>
+<div class="container py-5">
+    <h2 class="text-center mb-4">Reporte de Bienes Patrimoniales</h2>
+
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bien in bienes %}
+            <tr>
+                <td>{{ bien.id }}</td>
+                <td>{{ bien.nombre }}</td>
+                <td>{{ bien.descripcion }}</td>
+                <td>{{ bien.valor }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No hay bienes registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

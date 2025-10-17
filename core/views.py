@@ -13,6 +13,7 @@ from decimal import Decimal, InvalidOperation
 from django.utils.dateparse import parse_date
 
 
+
 def inicio(request):
     """
     Vista de inicio.

@@ -1,18 +1,20 @@
+
+from django.http import HttpResponse
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Público / auth
-    path("", views.inicio, name="inicio"),
-    path("login/", views.login_view, name="login"),
-    path("logout/", views.logout_view, name="logout"),
-    path("registro/", views.registro, name="registro"),
-    path("recuperar-password/", views.recuperar_password, name="recuperar_password"),
+    path('', views.inicio, name='inicio'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('registro/', views.registro, name='registro'),
+    path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
+    
 
-    # Dashboards
-    path("home_admin/", views.home_admin, name="home_admin"),
-    path("operadores/", views.operadores, name="operadores"),
-
+    # Admin / Operadores
+    path('home_admin/', views.home_admin, name='home_admin'),
+    path('alta_operadores/', views.alta_operadores, name='alta_operadores'),
+    path('operadores.html', views.operadores, name='operadores'),
     # Vistas varias (si las usás como páginas sueltas)
     path("base/", views.base, name="base"),
     path("reportes/", views.reportes_view, name="reportes"),
