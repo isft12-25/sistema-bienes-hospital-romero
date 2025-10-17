@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.inicio, name='inicio'),
+    path('inicio/', views.inicio, name='inicio'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
@@ -13,12 +13,11 @@ urlpatterns = [
 
     # Admin / Operadores
     path('home_admin/', views.home_admin, name='home_admin'),
-    path('alta_operadores/', views.alta_operadores, name='alta_operadores'),
-    path('operadores.html', views.operadores, name='operadores'),
+    path('alta_operadores/', views.alta_operadores, name='alta_operador'),
+    path('operadores/', views.operadores, name='operadores'),
     # Vistas varias (si las usás como páginas sueltas)
     path("base/", views.base, name="base"),
     path("reportes/", views.reportes_view, name="reportes"),
-    path("alta-operadores/", views.alta_operadores, name="alta_operadores"),
 
     # ============ BIENES ============
     # Lista general
@@ -37,6 +36,6 @@ urlpatterns = [
     path("bienes/<int:pk>/eliminar-definitivo/", views.eliminar_bien_definitivo, name="eliminar_bien_definitivo"),
 
     # (Opcional) plantillas “legacy” si aún las navegás directo
-    path("bienes.html", views.bienes, name="bienes"),
+    path("bienes/", views.bienes, name="bienes"),
     path("bien_confirm_delete/", views.bien_confirm_delete, name="bien_confirm_delete"),
 ]
