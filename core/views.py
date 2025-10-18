@@ -13,7 +13,7 @@ from decimal import Decimal, InvalidOperation
 from django.utils.dateparse import parse_date
 
 
-
+@login_required
 def inicio(request):
     """
     Vista de inicio.
@@ -31,7 +31,7 @@ def inicio(request):
                 return redirect('operadores')
     return render(request, 'inicio.html')
 
-
+@login_required
 def login_view(request):
     """
     Vista de login.
@@ -69,6 +69,10 @@ def login_view(request):
             messages.error(request, 'Usuario o contraseña incorrectos')
     return render(request, 'login.html')
 
+@login_required
+def home_operador(request):
+    """Dashboard operadores."""
+    return render(request, 'home_operador.html')
 
 def registro(request):
     """Vista de registro (placeholder)."""

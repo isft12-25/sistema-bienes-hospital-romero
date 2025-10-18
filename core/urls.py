@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     path('inicio/', views.inicio, name='inicio'),
+    path('', views.inicio, name='inicio'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
@@ -38,4 +39,6 @@ urlpatterns = [
     # (Opcional) plantillas “legacy” si aún las navegás directo
     path("bienes/", views.bienes, name="bienes"),
     path("bien_confirm_delete/", views.bien_confirm_delete, name="bien_confirm_delete"),
+
+    path("home_operador/", views.home_operador, name="home_operador"),
 ]
