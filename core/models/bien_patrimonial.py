@@ -91,7 +91,7 @@ class BienPatrimonial(models.Model):
 
     # Datos complementarios
     servicios = models.CharField(max_length=200, blank=True, verbose_name="Servicios")
-    observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
 
     # --- Campos de BAJA ---
     fecha_baja = models.DateField(
