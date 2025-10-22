@@ -201,6 +201,18 @@ body::after { bottom: 0; }
         font-size: 15px;
     }
 }
+.logout-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.logout-link:hover .material-symbols-outlined {
+    color: var(--primary-blue);
+    transform: scale(1.1);
+    transition: all 0.2s ease-in-out;
+}
+
 
 /* Efecto de carga */
 .loading {
