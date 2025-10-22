@@ -200,13 +200,23 @@ def alta_operadores(request):
         return redirect('home_operador')
 
     if request.method == "POST":
-        # Lógica mínima de creación (puedes reemplazar con un Form)
+        # Procesar todos los campos del formulario
         nombre = (request.POST.get('nombre') or "").strip()
         apellido = (request.POST.get('apellido') or "").strip()
         email = (request.POST.get('email') or "").strip()
         password = (request.POST.get('password') or "").strip()
+        pais = (request.POST.get('pais') or "").strip()
+        numero_doc = (request.POST.get('numero-doc') or "").strip()
+        estado = (request.POST.get('estado') or "").strip()
+        
+        # Validar campos obligatorios
         if not (nombre and apellido and email and password):
-            messages.error(request, "Faltan datos obligatorios.")
+            messages.error(request, "Faltan datos obligatorios: Nombre, Apellido, Email y Contraseña.")
+            return redirect('alta_operadores')
+
+        # Validar email
+        if '@' not in email or '.' not in email:
+            messages.error(request, "El email no tiene un formato válido.")
             return redirect('alta_operadores')
 
         # Evitar duplicados por email/username
@@ -216,22 +226,51 @@ def alta_operadores(request):
             messages.error(request, "Ya existe un usuario con ese email/username.")
             return redirect('alta_operadores')
 
-        # Crear usuario (si el modelo User no acepta tipo_usuario, se ignorará ese kw en create_user)
+        # Crear usuario con tipo_usuario correcto ('empleado')
+        is_active = estado == 'habilitado' if estado else True
         try:
-            user = User.objects.create_user(username=email, email=email, password=password, tipo_usuario='operador', is_active=True)
+            user = User.objects.create_user(
+                username=email, 
+                email=email, 
+                password=password, 
+                tipo_usuario='empleado',  # Usar 'empleado' del modelo
+                is_active=is_active,
+                first_name=nombre,
+                last_name=apellido
+            )
         except TypeError:
             # modelo auth.User clásico no acepta tipo_usuario
-            user = User.objects.create_user(username=email, email=email, password=password, is_active=True)
+            user = User.objects.create_user(
+                username=email, 
+                email=email, 
+                password=password, 
+                is_active=is_active,
+                first_name=nombre,
+                last_name=apellido
+            )
 
-        # Crear instancia Operador si el modelo existe
+        # Crear instancia Operador si el modelo existe (con campos adicionales)
         try:
             from core.models.operador import Operador as OperadorModel
-            OperadorModel.objects.create(usuario=user, nombre_completo=f"{nombre} {apellido}")
+            operador_data = {
+                'usuario': user, 
+                'nombre_completo': f"{nombre} {apellido}"
+            }
+            
+            # Agregar campos opcionales si existen en el modelo
+            if pais:
+                operador_data['pais'] = pais
+            if numero_doc:
+                operador_data['numero_documento'] = numero_doc
+            if estado:
+                operador_data['estado'] = estado
+                
+            OperadorModel.objects.create(**operador_data)
         except (ImportError, AttributeError):
             # Si no existe modelo Operador, continuar sin fallo
             pass
 
-        messages.success(request, "Operador creado correctamente.")
+        messages.success(request, f"Operador {nombre} {apellido} creado correctamente.")
         return redirect('operadores')
 
     context = perms
