@@ -15,6 +15,8 @@ from django.utils.dateparse import parse_date
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.messages import get_messages
+# ⬇️ NUEVO: si preferís fallback explícito en vez de omitir claves
+from core.constants import ORIGEN_COMPRA, ESTADO_ACTIVO  # <-- agregado
 
 
 def _role_route_name(user) -> str:
@@ -505,9 +507,10 @@ def carga_masiva_bienes(request):
 
         from core.models import Expediente  # import local
 
-        with transaction.atomic():
-            for i, row in df.iterrows():
-                try:
+        # ⬇️ IMPORTANTE: no usamos un atomic global que se rompa por una fila.
+        for i, row in df.iterrows():
+            try:
+                with transaction.atomic():  # savepoint por fila
                     numero_id   = get_first(row, ['n de id','n_de_id','numero_identificacion','id_patrimonial','nº de id','no de id'])
                     nro_exp     = get_first(row, ['n de expediente','n_de_expediente','numero_expediente','nº de expediente','no de expediente','expediente'])
                     nro_compra  = get_first(row, ['n de compra','n_de_compra','numero_compra','nº de compra','no de compra'])
@@ -527,11 +530,12 @@ def carga_masiva_bienes(request):
                     fecha_alta  = parse_date_any(get_first(row, ['fecha de alta','fecha_de_alta','fecha_alta']))
                     fecha_baja  = parse_date_any(get_first(row, ['fecha de baja','fecha_de_baja','fecha_baja']))
 
-                    origen = map_origen(origen_txt)
-                    estado = map_estado(estado_txt)
+                    origen_val = map_origen(origen_txt)   # puede ser None
+                    estado_val = map_estado(estado_txt)   # puede ser None
 
                     precio = parse_money(precio_raw)
-                    if origen != 'COMPRA':
+                    # si no es compra, el modelo limpiará a None en clean(); por las dudas lo apagamos acá:
+                    if origen_val != 'COMPRA':
                         precio = None
 
                     if not fecha_alta:
@@ -550,30 +554,43 @@ def carga_masiva_bienes(request):
 
                     defaults = {
                         'nombre': nombre,
-                        'descripcion': descripcion,
+                        'descripcion': descripcion or '',
                         'cantidad': cantidad,
                         'servicios': servicios,
                         'numero_serie': nro_serie,
                         'cuenta_codigo': cuenta_cod,
                         'nomenclatura_bienes': nomencl,
                         'observaciones': observ,
-                        'origen': origen,
-                        'estado': estado,
                         'valor_adquisicion': precio,
                         'fecha_adquisicion': fecha_alta,
                         'fecha_baja': fecha_baja,
                         'expediente': expediente_obj,
                     }
 
-                    if numero_id:
+                    # ⬇️ CLAVE: si el mapeo dio None, NO mandamos la clave para que el modelo use el default
+                    if origen_val is not None:
+                        defaults['origen'] = origen_val
+                    # else:  # alternativa si querés fallback explícito
+                    #     defaults['origen'] = ORIGEN_COMPRA
+
+                    if estado_val is not None:
+                        defaults['estado'] = estado_val
+                    # else:
+                    #     defaults['estado'] = ESTADO_ACTIVO
+
+                    # numero_identificacion único: None cuando no venga (no '')
+                    numero_id = (numero_id or '').strip()
+                    numero_id_val = numero_id or None
+
+                    if numero_id_val is not None:
                         _, created = BienPatrimonial.objects.update_or_create(
-                            numero_identificacion=numero_id,
+                            numero_identificacion=numero_id_val,
                             defaults=defaults
                         )
                     elif nro_serie and descripcion:
                         _, created = BienPatrimonial.objects.update_or_create(
                             numero_serie=nro_serie,
-                            descripcion=descripcion,
+                            descripcion=descripcion or '',
                             defaults=defaults
                         )
                     else:
@@ -583,8 +600,9 @@ def carga_masiva_bienes(request):
                     creados += int(created)
                     actualizados += int(not created)
 
-                except (ValueError, ValidationError, IntegrityError) as e:
-                    errores.append(f"Fila {i + 2}: {e}")
+            except (ValueError, ValidationError, IntegrityError) as e:
+                # No rompe el resto de filas gracias al savepoint anterior
+                errores.append(f"Fila {i + 2}: {e}")
 
         if creados or actualizados:
             messages.success(
@@ -602,7 +620,6 @@ def carga_masiva_bienes(request):
     except (FileNotFoundError, pd.errors.EmptyDataError, KeyError) as e:
         messages.error(request, f'Error al procesar el archivo: {e}')
         return redirect('lista_bienes')
-
 
 @login_required
 @require_POST
