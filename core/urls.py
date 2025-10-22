@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.urls import path
-from django.views.generic import RedirectView  
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
@@ -10,7 +10,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro, name='registro'),
     path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
-    
+
 
     path('accounts/login/', RedirectView.as_view(pattern_name='login', permanent=False)),
 

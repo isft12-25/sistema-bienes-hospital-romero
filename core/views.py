@@ -4,23 +4,26 @@ from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import CargaMasivaForm, BienPatrimonialForm
-from .models import BienPatrimonial
+from core.forms import CargaMasivaForm, BienPatrimonialForm
+from core.models import BienPatrimonial
 from django.db.models import Q
 from django.views.decorators.http import require_POST
-from django.db import transaction
+from django.db import transaction, IntegrityError
+from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.utils.dateparse import parse_date
-from django.conf import settings
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.messages import get_messages
 
 
 def _role_route_name(user) -> str:
     """Devuelve el nombre de la ruta según el rol del usuario."""
+    # Unificamos para que el home del operador sea siempre 'home_operador'
     if hasattr(user, 'tipo_usuario'):
-        return 'home_admin' if user.tipo_usuario == 'admin' else 'operadores'
-    return 'home_admin' if user.is_superuser else 'operadores'
+        return 'home_admin' if user.tipo_usuario == 'admin' else 'home_operador'
+    return 'home_admin' if user.is_superuser else 'home_operador'
+
 
 def _safe_next(request) -> str:
     """Devuelve un 'next' válido (mismo host) y que NO apunte al propio login."""
@@ -28,14 +31,45 @@ def _safe_next(request) -> str:
     if not nxt:
         return ''
     if url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}):
-        login_path = reverse('login')  
+        login_path = reverse('login')
         if nxt.startswith(login_path):
-            return ''  
+            return ''
         return nxt
     return ''
 
 
 # ============= VISTAS =============
+
+# -------------------------
+# Helpers de permisos
+# -------------------------
+def permisos_context(user):
+    """
+    Devuelve un dict con booleans útiles para templates y lógica:
+    - es_admin: True si el user es administrador (tipo_usuario == 'admin' o is_superuser)
+    - puede_eliminar: True si puede eliminar bienes (solo admins)
+    - puede_gestionar_operadores: True si puede gestionar operadores (solo admins)
+    """
+    if not getattr(user, "is_authenticated", False):
+        return {"es_admin": False, "puede_eliminar": False, "puede_gestionar_operadores": False}
+
+    es_admin = False
+    if hasattr(user, "tipo_usuario"):
+        es_admin = user.tipo_usuario == "admin" or user.is_superuser
+    else:
+        es_admin = user.is_superuser
+
+    return {
+        "es_admin": es_admin,
+        "puede_eliminar": es_admin,
+        "puede_gestionar_operadores": es_admin,
+    }
+
+
+# ============================
+# AUTENTICACIÓN / INICIO
+# ============================
+
 
 @login_required
 def inicio(request):
@@ -71,10 +105,13 @@ def login_view(request):
     # GET: mostrar login con el 'next' saneado (si vino)
     return render(request, 'login.html', {'next': _safe_next(request)})
 
+
 @login_required
 def home_operador(request):
     """Dashboard operadores."""
-    return render(request, 'home_operador.html')
+    context = permisos_context(request.user)
+    return render(request, 'home_operador.html', context)
+
 
 def registro(request):
     """Vista de registro (placeholder)."""
@@ -93,6 +130,10 @@ def base(request):
 
 @login_required
 def bienes(request):
+    """
+    Vista para crear bienes (si el template lo permite).
+    Pasamos permisos al template para controlar la UI.
+    """
     if request.method == "POST":
         form = BienPatrimonialForm(request.POST)
         if form.is_valid():
@@ -102,11 +143,17 @@ def bienes(request):
         messages.error(request, "Revisá los datos del formulario.")
     else:
         form = BienPatrimonialForm()
-    return render(request, "bienes.html", {"form": form})
+
+    context = permisos_context(request.user)
+    context.update({"form": form})
+    return render(request, "bienes.html", context)
+
 
 def logout_view(request):
     """Cerrar sesión."""
     logout(request)
+    # consumir/limpiar mensajes previos para que no se acumulen
+    list(get_messages(request))
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('inicio')
 
@@ -118,20 +165,25 @@ def logout_view(request):
 @login_required
 def home_admin(request):
     """Dashboard administradores."""
-    if hasattr(request.user, 'tipo_usuario'):
-        if request.user.tipo_usuario != 'admin':
-            messages.error(request, 'No tienes permisos para acceder a esta página')
-            return redirect('operadores')
-    elif not request.user.is_superuser:
+    perms = permisos_context(request.user)
+    if not perms["es_admin"]:
         messages.error(request, 'No tienes permisos para acceder a esta página')
-        return redirect('operadores')
-    return render(request, 'home_admin.html')
+        return redirect('home_operador')
+    context = perms
+    # Puedes añadir métricas al context (total bienes, etc)
+    return render(request, 'home_admin.html', context)
 
 
 @login_required
 def operadores(request):
-    """Dashboard operadores."""
-    return render(request, 'operadores.html')
+    """Dashboard operadores / gestión de operadores (solo admin puede gestionar)."""
+    perms = permisos_context(request.user)
+    if not perms["puede_gestionar_operadores"]:
+        # Si no es admin, mostrar el dashboard de operador o propio perfil
+        messages.warning(request, 'No tienes permisos para gestionar operadores')
+        return redirect('home_operador')
+    context = perms
+    return render(request, 'operadores.html', context)
 
 
 def recuperar_password(request):
@@ -139,14 +191,60 @@ def recuperar_password(request):
     return render(request, 'recuperar_password.html')
 
 
+@login_required
 def alta_operadores(request):
-    """Alta/gestión operadores (placeholder)."""
-    return render(request, 'alta_operadores.html')
+    """Alta/gestión operadores. Solo admin puede crear (backend protegido)."""
+    perms = permisos_context(request.user)
+    if not perms["puede_gestionar_operadores"]:
+        messages.error(request, 'No tienes permisos para acceder a esta página')
+        return redirect('home_operador')
+
+    if request.method == "POST":
+        # Lógica mínima de creación (puedes reemplazar con un Form)
+        nombre = (request.POST.get('nombre') or "").strip()
+        apellido = (request.POST.get('apellido') or "").strip()
+        email = (request.POST.get('email') or "").strip()
+        password = (request.POST.get('password') or "").strip()
+        if not (nombre and apellido and email and password):
+            messages.error(request, "Faltan datos obligatorios.")
+            return redirect('alta_operadores')
+
+        # Evitar duplicados por email/username
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            messages.error(request, "Ya existe un usuario con ese email/username.")
+            return redirect('alta_operadores')
+
+        # Crear usuario (si el modelo User no acepta tipo_usuario, se ignorará ese kw en create_user)
+        try:
+            user = User.objects.create_user(username=email, email=email, password=password, tipo_usuario='operador', is_active=True)
+        except TypeError:
+            # modelo auth.User clásico no acepta tipo_usuario
+            user = User.objects.create_user(username=email, email=email, password=password, is_active=True)
+
+        # Crear instancia Operador si el modelo existe
+        try:
+            from core.models.operador import Operador as OperadorModel
+            OperadorModel.objects.create(usuario=user, nombre_completo=f"{nombre} {apellido}")
+        except (ImportError, AttributeError):
+            # Si no existe modelo Operador, continuar sin fallo
+            pass
+
+        messages.success(request, "Operador creado correctamente.")
+        return redirect('operadores')
+
+    context = perms
+    return render(request, 'alta_operadores.html', context)
 
 
+@login_required
 def reportes_view(request):
     """Reportes (placeholder)."""
-    return render(request, 'reportes.html')
+    context = permisos_context(request.user)
+    # modelar reportes y añadirlos al context si hace falta
+    context.update({"reportes": []})
+    return render(request, 'reportes.html', context)
 
 
 # ============================
@@ -162,14 +260,14 @@ def lista_bienes(request):
     f_hasta  = request.GET.get("f_hasta") or ""
     orden    = request.GET.get("orden") or "-fecha"
 
-    bienes = (
+    bienes_queryset = (
         BienPatrimonial.objects
         .select_related("expediente")
         .order_by("clave_unica")
     )
 
     if q:
-        bienes = bienes.filter(
+        bienes_queryset = bienes_queryset.filter(
             Q(clave_unica__icontains=q) |
             Q(descripcion__icontains=q) |
             Q(observaciones__icontains=q) |
@@ -186,39 +284,41 @@ def lista_bienes(request):
 
     # Filtro origen
     if f_origen == "__NULL__":
-        bienes = bienes.filter(origen__isnull=True)
+        bienes_queryset = bienes_queryset.filter(origen__isnull=True)
     elif f_origen:
-        bienes = bienes.filter(origen=f_origen)
+        bienes_queryset = bienes_queryset.filter(origen=f_origen)
 
     # Filtro estado
     if f_estado == "__NULL__":
-        bienes = bienes.filter(estado__isnull=True)
+        bienes_queryset = bienes_queryset.filter(estado__isnull=True)
     elif f_estado:
-        bienes = bienes.filter(estado=f_estado)
+        bienes_queryset = bienes_queryset.filter(estado=f_estado)
 
     # Rango fechas (alta)
     if f_desde:
         d = parse_date(f_desde)
         if d:
-            bienes = bienes.filter(fecha_adquisicion__gte=d)
+            bienes_queryset = bienes_queryset.filter(fecha_adquisicion__gte=d)
     if f_hasta:
         h = parse_date(f_hasta)
         if h:
-            bienes = bienes.filter(fecha_adquisicion__lte=h)
+            bienes_queryset = bienes_queryset.filter(fecha_adquisicion__lte=h)
 
     # Orden
     if orden == "fecha":
-        bienes = bienes.order_by("fecha_adquisicion", "clave_unica")
+        bienes_queryset = bienes_queryset.order_by("fecha_adquisicion", "clave_unica")
     elif orden == "-fecha":
-        bienes = bienes.order_by("-fecha_adquisicion", "clave_unica")
+        bienes_queryset = bienes_queryset.order_by("-fecha_adquisicion", "clave_unica")
     elif orden == "precio":
-        bienes = bienes.order_by("valor_adquisicion", "clave_unica")
+        bienes_queryset = bienes_queryset.order_by("valor_adquisicion", "clave_unica")
     elif orden == "-precio":
-        bienes = bienes.order_by("-valor_adquisicion", "clave_unica")
+        bienes_queryset = bienes_queryset.order_by("-valor_adquisicion", "clave_unica")
     else:
-        bienes = bienes.order_by("clave_unica")
+        bienes_queryset = bienes_queryset.order_by("clave_unica")
 
-    return render(request, "bienes/lista_bienes.html", {"bienes": bienes, "q": q})
+    context = permisos_context(request.user)
+    context.update({"bienes": bienes_queryset, "q": q})
+    return render(request, "bienes/lista_bienes.html", context)
 
 
 # ============================
@@ -236,12 +336,19 @@ def editar_bien(request, pk):
             return redirect('lista_bienes')
     else:
         form = BienPatrimonialForm(instance=bien)
-    return render(request, 'bienes/editar_bien.html', {'form': form, 'bien': bien})
+    context = permisos_context(request.user)
+    context.update({'form': form, 'bien': bien})
+    return render(request, 'bienes/editar_bien.html', context)
 
 
 @login_required
 def eliminar_bien(request, pk):
-    """Eliminación física directa (no baja)."""
+    """Eliminación física directa (no baja). Solo administradores pueden eliminar."""
+    perms = permisos_context(request.user)
+    if not perms["puede_eliminar"]:
+        messages.error(request, "No tienes permisos para eliminar bienes.")
+        return redirect('lista_bienes')
+
     bien = get_object_or_404(BienPatrimonial, pk=pk)
     bien.delete()
     messages.success(request, "Bien eliminado correctamente.")
@@ -255,10 +362,14 @@ def eliminar_bien(request, pk):
 @login_required
 def carga_masiva_bienes(request):
     if request.method != 'POST':
-        return render(request, 'carga_masiva.html', {'form': CargaMasivaForm()})
+        context = permisos_context(request.user)
+        context.update({'form': CargaMasivaForm()})
+        return render(request, 'carga_masiva.html', context)
 
     form = CargaMasivaForm(request.POST, request.FILES)
     if not form.is_valid():
+        context = permisos_context(request.user)
+        context.update({'form': form})
         return render(request, 'carga_masiva.html', {'form': form})
 
     try:
@@ -289,7 +400,7 @@ def carga_masiva_bienes(request):
             try:
                 val = int(float(txt))
                 return max(val, 1)
-            except Exception:
+            except (ValueError, TypeError):
                 return 1
 
         def parse_money(v):
@@ -315,7 +426,7 @@ def carga_masiva_bienes(request):
                 if pd.isna(dt):
                     return None
                 return dt.date()
-            except Exception:
+            except (ValueError, TypeError):
                 return None
 
         def map_origen(v):
@@ -348,7 +459,7 @@ def carga_masiva_bienes(request):
 
         creados, actualizados, errores = 0, 0, []
 
-        from .models import Expediente  # import local
+        from core.models import Expediente  # import local
 
         with transaction.atomic():
             for i, row in df.iterrows():
@@ -411,24 +522,24 @@ def carga_masiva_bienes(request):
                     }
 
                     if numero_id:
-                        obj, created = BienPatrimonial.objects.update_or_create(
+                        _, created = BienPatrimonial.objects.update_or_create(
                             numero_identificacion=numero_id,
                             defaults=defaults
                         )
                     elif nro_serie and descripcion:
-                        obj, created = BienPatrimonial.objects.update_or_create(
+                        _, created = BienPatrimonial.objects.update_or_create(
                             numero_serie=nro_serie,
                             descripcion=descripcion,
                             defaults=defaults
                         )
                     else:
-                        obj = BienPatrimonial.objects.create(**defaults)
+                        BienPatrimonial.objects.create(**defaults)
                         created = True
 
                     creados += int(created)
                     actualizados += int(not created)
 
-                except Exception as e:
+                except (ValueError, ValidationError, IntegrityError) as e:
                     errores.append(f"Fila {i + 2}: {e}")
 
         if creados or actualizados:
@@ -444,7 +555,7 @@ def carga_masiva_bienes(request):
 
         return redirect('lista_bienes')
 
-    except Exception as e:
+    except (FileNotFoundError, pd.errors.EmptyDataError, KeyError) as e:
         messages.error(request, f'Error al procesar el archivo: {e}')
         return redirect('lista_bienes')
 
@@ -452,6 +563,11 @@ def carga_masiva_bienes(request):
 @login_required
 @require_POST
 def eliminar_bienes_seleccionados(request):
+    perms = permisos_context(request.user)
+    if not perms["puede_eliminar"]:
+        messages.error(request, "No tienes permisos para eliminar bienes.")
+        return redirect('lista_bienes')
+
     ids = request.POST.getlist('seleccionados')
     if not ids:
         messages.warning(request, "No seleccionaste bienes para eliminar.")
@@ -472,14 +588,14 @@ def lista_baja_bienes(request):
     q = (request.GET.get("q") or "").strip()
     orden = request.GET.get("orden") or "-fecha_baja"
 
-    bienes = (
+    bienes_baja = (
         BienPatrimonial.objects
         .select_related("expediente")
         .filter(estado="BAJA")
     )
 
     if q:
-        bienes = bienes.filter(
+        bienes_baja = bienes_baja.filter(
             Q(clave_unica__icontains=q) |
             Q(descripcion__icontains=q) |
             Q(observaciones__icontains=q) |
@@ -494,17 +610,19 @@ def lista_baja_bienes(request):
         )
 
     if orden == "fecha_baja":
-        bienes = bienes.order_by("fecha_baja", "clave_unica")
+        bienes_baja = bienes_baja.order_by("fecha_baja", "clave_unica")
     elif orden == "-fecha_baja":
-        bienes = bienes.order_by("-fecha_baja", "clave_unica")
+        bienes_baja = bienes_baja.order_by("-fecha_baja", "clave_unica")
     elif orden == "precio":
-        bienes = bienes.order_by("valor_adquisicion", "clave_unica")
+        bienes_baja = bienes_baja.order_by("valor_adquisicion", "clave_unica")
     elif orden == "-precio":
-        bienes = bienes.order_by("-valor_adquisicion", "clave_unica")
+        bienes_baja = bienes_baja.order_by("-valor_adquisicion", "clave_unica")
     else:
-        bienes = bienes.order_by("-fecha_baja", "clave_unica")
+        bienes_baja = bienes_baja.order_by("-fecha_baja", "clave_unica")
 
-    return render(request, "bienes/lista_baja_bienes.html", {"bienes": bienes})
+    context = permisos_context(request.user)
+    context.update({"bienes": bienes_baja})
+    return render(request, "bienes/lista_baja_bienes.html", context)
 
 
 @login_required
@@ -546,7 +664,13 @@ def restablecer_bien(request, pk):
     Restablece un bien dado de baja:
     - estado = 'ACTIVO'
     - limpia fecha_baja / expediente_baja / descripcion_baja si existen
+    Solo administradores pueden restablecer.
     """
+    perms = permisos_context(request.user)
+    if not perms["es_admin"]:
+        messages.error(request, "No tienes permisos para restablecer bienes.")
+        return redirect("lista_baja_bienes")
+
     bien = get_object_or_404(BienPatrimonial, pk=pk)
 
     bien.estado = "ACTIVO"
@@ -576,7 +700,13 @@ def restablecer_bien(request, pk):
 def eliminar_bien_definitivo(request, pk):
     """
     Elimina físicamente un bien (no reversible). Se usa desde lista de bajas.
+    Solo administradores pueden eliminar definitivamente.
     """
+    perms = permisos_context(request.user)
+    if not perms["es_admin"]:
+        messages.error(request, "No tienes permisos para eliminar bienes definitivamente.")
+        return redirect("lista_baja_bienes")
+
     bien = get_object_or_404(BienPatrimonial, pk=pk)
     identificador = bien.clave_unica or bien.pk
     bien.delete()
