@@ -17,11 +17,6 @@ def first_present(model, candidates):
     return None
 
 
-# ===== Models =====
-BienPatrimonial = apps.get_model('core', 'BienPatrimonial')
-Expediente = apps.get_model('core', 'Expediente')
-
-
 # ===== Expediente Admin =====
 @admin.register(Expediente, site=custom_admin_site)
 class ExpedienteAdmin(admin.ModelAdmin):

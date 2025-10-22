@@ -36,7 +36,6 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-__init__.py
 
 # Django
 *.log
