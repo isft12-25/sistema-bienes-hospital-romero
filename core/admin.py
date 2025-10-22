@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.apps import apps
 from sistema_bienes.admin import custom_admin_site  # tu admin personalizado
+from .models.expediente import Expediente
+from .models.bien_patrimonial import BienPatrimonial
 
 
 # ===== Helpers seguros =====
