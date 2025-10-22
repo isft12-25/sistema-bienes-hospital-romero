@@ -11,42 +11,50 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 from decimal import Decimal, InvalidOperation
 from django.utils.dateparse import parse_date
+from django.conf import settings
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
+
+def _role_route_name(user) -> str:
+    """Devuelve el nombre de la ruta según el rol del usuario."""
+    if hasattr(user, 'tipo_usuario'):
+        return 'home_admin' if user.tipo_usuario == 'admin' else 'operadores'
+    return 'home_admin' if user.is_superuser else 'operadores'
+
+def _safe_next(request) -> str:
+    """Devuelve un 'next' válido (mismo host) y que NO apunte al propio login."""
+    nxt = request.GET.get('next') or request.POST.get('next') or ''
+    if not nxt:
+        return ''
+    if url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}):
+        login_path = reverse('login')  
+        if nxt.startswith(login_path):
+            return ''  
+        return nxt
+    return ''
+
+
+# ============= VISTAS =============
 
 @login_required
 def inicio(request):
     """
     Vista de inicio.
+    Redirige por rol (admin/operadores). Requiere login.
     """
-    if request.user.is_authenticated:
-        if hasattr(request.user, 'tipo_usuario'):
-            if request.user.tipo_usuario == 'admin':
-                return redirect('home_admin')
-            else:
-                return redirect('operadores')
-        else:
-            if request.user.is_superuser:
-                return redirect('home_admin')
-            else:
-                return redirect('operadores')
-    return render(request, 'inicio.html')
+    return redirect(_role_route_name(request.user))
 
-@login_required
+
 def login_view(request):
     """
-    Vista de login.
+    Vista de login (¡sin @login_required!).
+    Evita bucles con 'next' y respeta el destino si es seguro.
     """
+    # Si ya está logueado, mandarlo al 'next' seguro o a su home por rol
     if request.user.is_authenticated:
-        if hasattr(request.user, 'tipo_usuario'):
-            if request.user.tipo_usuario == 'admin':
-                return redirect('home_admin')
-            else:
-                return redirect('operadores')
-        else:
-            if request.user.is_superuser:
-                return redirect('home_admin')
-            else:
-                return redirect('operadores')
+        nxt = _safe_next(request)
+        return redirect(nxt or _role_route_name(request.user))
 
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
@@ -55,19 +63,13 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'¡Bienvenido {user.username}!')
-            if hasattr(user, 'tipo_usuario'):
-                if user.tipo_usuario == 'admin':
-                    return redirect('home_admin')
-                else:
-                    return redirect('operadores')
-            else:
-                if user.is_superuser:
-                    return redirect('home_admin')
-                else:
-                    return redirect('operadores')
+            nxt = _safe_next(request)
+            return redirect(nxt or _role_route_name(user))
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
-    return render(request, 'login.html')
+
+    # GET: mostrar login con el 'next' saneado (si vino)
+    return render(request, 'login.html', {'next': _safe_next(request)})
 
 @login_required
 def home_operador(request):
