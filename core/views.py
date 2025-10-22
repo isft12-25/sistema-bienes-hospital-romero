@@ -34,7 +34,12 @@ def _safe_next(request) -> str:
         login_path = reverse('login')
         if nxt.startswith(login_path):
             return ''
-        return nxt
+        # Por ahora, ser conservador y solo permitir rutas básicas
+        safe_routes = ['/inicio/', '/home_admin/', '/home_operador/', '/operadores/', '/reportes/']
+        if any(nxt.startswith(route) for route in safe_routes):
+            return nxt
+        # Para otras rutas, no usar 'next' y dejar que vaya al home por rol
+        return ''
     return ''
 
 
@@ -208,7 +213,7 @@ def alta_operadores(request):
         pais = (request.POST.get('pais') or "").strip()
         numero_doc = (request.POST.get('numero-doc') or "").strip()
         estado = (request.POST.get('estado') or "").strip()
-        
+
         # Validar campos obligatorios
         if not (nombre and apellido and email and password):
             messages.error(request, "Faltan datos obligatorios: Nombre, Apellido, Email y Contraseña.")
@@ -230,9 +235,9 @@ def alta_operadores(request):
         is_active = estado == 'habilitado' if estado else True
         try:
             user = User.objects.create_user(
-                username=email, 
-                email=email, 
-                password=password, 
+                username=email,
+                email=email,
+                password=password,
                 tipo_usuario='empleado',  # Usar 'empleado' del modelo
                 is_active=is_active,
                 first_name=nombre,
@@ -241,9 +246,9 @@ def alta_operadores(request):
         except TypeError:
             # modelo auth.User clásico no acepta tipo_usuario
             user = User.objects.create_user(
-                username=email, 
-                email=email, 
-                password=password, 
+                username=email,
+                email=email,
+                password=password,
                 is_active=is_active,
                 first_name=nombre,
                 last_name=apellido
@@ -253,10 +258,10 @@ def alta_operadores(request):
         try:
             from core.models.operador import Operador as OperadorModel
             operador_data = {
-                'usuario': user, 
+                'usuario': user,
                 'nombre_completo': f"{nombre} {apellido}"
             }
-            
+
             # Agregar campos opcionales si existen en el modelo
             if pais:
                 operador_data['pais'] = pais
@@ -264,7 +269,7 @@ def alta_operadores(request):
                 operador_data['numero_documento'] = numero_doc
             if estado:
                 operador_data['estado'] = estado
-                
+
             OperadorModel.objects.create(**operador_data)
         except (ImportError, AttributeError):
             # Si no existe modelo Operador, continuar sin fallo
