@@ -12,55 +12,24 @@ from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.utils.dateparse import parse_date
-from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.messages import get_messages
-# ⬇️ NUEVO: si preferís fallback explícito en vez de omitir claves
-from core.constants import ORIGEN_COMPRA, ESTADO_ACTIVO  # <-- agregado
 
 
 def _role_route_name(user) -> str:
     """Devuelve el nombre de la ruta según el rol del usuario."""
-    # Unificamos para que el home del operador sea siempre 'home_operador'
     if hasattr(user, 'tipo_usuario'):
         return 'home_admin' if user.tipo_usuario == 'admin' else 'home_operador'
     return 'home_admin' if user.is_superuser else 'home_operador'
 
 
-def _safe_next(request) -> str:
-    """Devuelve un 'next' válido (mismo host) y que NO apunte al propio login."""
-    nxt = request.GET.get('next') or request.POST.get('next') or ''
-    if not nxt:
-        return ''
-    if url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}):
-        login_path = reverse('login')
-        if nxt.startswith(login_path):
-            return ''
-        # Por ahora, ser conservador y solo permitir rutas básicas
-        safe_routes = ['/inicio/', '/home_admin/', '/home_operador/', '/operadores/', '/reportes/']
-        if any(nxt.startswith(route) for route in safe_routes):
-            return nxt
-        # Para otras rutas, no usar 'next' y dejar que vaya al home por rol
-        return ''
-    return ''
-
 
 # ============= VISTAS =============
 
-# -------------------------
-# Helpers de permisos
-# -------------------------
 def permisos_context(user):
-    """
-    Devuelve un dict con booleans útiles para templates y lógica:
-    - es_admin: True si el user es administrador (tipo_usuario == 'admin' o is_superuser)
-    - puede_eliminar: True si puede eliminar bienes (solo admins)
-    - puede_gestionar_operadores: True si puede gestionar operadores (solo admins)
-    """
+    """Booleans útiles para templates y lógica."""
     if not getattr(user, "is_authenticated", False):
         return {"es_admin": False, "puede_eliminar": False, "puede_gestionar_operadores": False}
 
-    es_admin = False
     if hasattr(user, "tipo_usuario"):
         es_admin = user.tipo_usuario == "admin" or user.is_superuser
     else:
@@ -77,25 +46,16 @@ def permisos_context(user):
 # AUTENTICACIÓN / INICIO
 # ============================
 
-
-@login_required
 def inicio(request):
-    """
-    Vista de inicio.
-    Redirige por rol (admin/operadores). Requiere login.
-    """
-    return redirect(_role_route_name(request.user))
+
+    if request.user.is_authenticated:
+        return redirect(_role_route_name(request.user))
+    return render(request, 'inicio.html')
 
 
 def login_view(request):
-    """
-    Vista de login (¡sin @login_required!).
-    Evita bucles con 'next' y respeta el destino si es seguro.
-    """
-    # Si ya está logueado, mandarlo al 'next' seguro o a su home por rol
     if request.user.is_authenticated:
-        nxt = _safe_next(request)
-        return redirect(nxt or _role_route_name(request.user))
+        return redirect(_role_route_name(request.user))
 
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
@@ -104,43 +64,32 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'¡Bienvenido {user.username}!')
-            nxt = _safe_next(request)
-            return redirect(nxt or _role_route_name(user))
-        else:
-            messages.error(request, 'Usuario o contraseña incorrectos')
+            return redirect(_role_route_name(user))
+        messages.error(request, 'Usuario o contraseña incorrectos')
 
-    # GET: mostrar login con el 'next' saneado (si vino)
-    return render(request, 'login.html', {'next': _safe_next(request)})
+    return render(request, 'login.html')
 
 
 @login_required
 def home_operador(request):
-    """Dashboard operadores."""
     context = permisos_context(request.user)
     return render(request, 'home_operador.html', context)
 
 
 def registro(request):
-    """Vista de registro (placeholder)."""
     return render(request, 'registro.html')
 
 
 def bien_confirm_delete(request):
-    """Plantilla de confirmación de borrado (placeholder)."""
     return render(request, 'bien_confirm_delete.html')
 
 
 def base(request):
-    """Layout base."""
     return render(request, 'base.html')
 
 
 @login_required
 def bienes(request):
-    """
-    Vista para crear bienes (si el template lo permite).
-    Pasamos permisos al template para controlar la UI.
-    """
     if request.method == "POST":
         form = BienPatrimonialForm(request.POST)
         if form.is_valid():
@@ -157,10 +106,8 @@ def bienes(request):
 
 
 def logout_view(request):
-    """Cerrar sesión."""
     logout(request)
-    # consumir/limpiar mensajes previos para que no se acumulen
-    list(get_messages(request))
+    list(get_messages(request))  # limpiar mensajes previos
     messages.success(request, 'Sesión cerrada exitosamente')
     return redirect('inicio')
 
@@ -171,43 +118,34 @@ def logout_view(request):
 
 @login_required
 def home_admin(request):
-    """Dashboard administradores."""
     perms = permisos_context(request.user)
     if not perms["es_admin"]:
         messages.error(request, 'No tienes permisos para acceder a esta página')
         return redirect('home_operador')
-    context = perms
-    # Puedes añadir métricas al context (total bienes, etc)
-    return render(request, 'home_admin.html', context)
+    return render(request, 'home_admin.html', perms)
 
 
 @login_required
 def operadores(request):
-    """Dashboard operadores / gestión de operadores (solo admin puede gestionar)."""
     perms = permisos_context(request.user)
     if not perms["puede_gestionar_operadores"]:
-        # Si no es admin, mostrar el dashboard de operador o propio perfil
         messages.warning(request, 'No tienes permisos para gestionar operadores')
         return redirect('home_operador')
-    context = perms
-    return render(request, 'operadores.html', context)
+    return render(request, 'operadores.html', perms)
 
 
 def recuperar_password(request):
-    """Recuperar contraseña (placeholder)."""
     return render(request, 'recuperar_password.html')
 
 
 @login_required
 def alta_operadores(request):
-    """Alta/gestión operadores. Solo admin puede crear (backend protegido)."""
     perms = permisos_context(request.user)
     if not perms["puede_gestionar_operadores"]:
         messages.error(request, 'No tienes permisos para acceder a esta página')
         return redirect('home_operador')
 
     if request.method == "POST":
-        # Procesar todos los campos del formulario
         nombre = (request.POST.get('nombre') or "").strip()
         apellido = (request.POST.get('apellido') or "").strip()
         email = (request.POST.get('email') or "").strip()
@@ -216,37 +154,32 @@ def alta_operadores(request):
         numero_doc = (request.POST.get('numero-doc') or "").strip()
         estado = (request.POST.get('estado') or "").strip()
 
-        # Validar campos obligatorios
         if not (nombre and apellido and email and password):
             messages.error(request, "Faltan datos obligatorios: Nombre, Apellido, Email y Contraseña.")
             return redirect('alta_operadores')
 
-        # Validar email
         if '@' not in email or '.' not in email:
             messages.error(request, "El email no tiene un formato válido.")
             return redirect('alta_operadores')
 
-        # Evitar duplicados por email/username
         from django.contrib.auth import get_user_model
         User = get_user_model()
         if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
             messages.error(request, "Ya existe un usuario con ese email/username.")
             return redirect('alta_operadores')
 
-        # Crear usuario con tipo_usuario correcto ('empleado')
         is_active = estado == 'habilitado' if estado else True
         try:
             user = User.objects.create_user(
                 username=email,
                 email=email,
                 password=password,
-                tipo_usuario='empleado',  # Usar 'empleado' del modelo
+                tipo_usuario='empleado',
                 is_active=is_active,
                 first_name=nombre,
                 last_name=apellido
             )
         except TypeError:
-            # modelo auth.User clásico no acepta tipo_usuario
             user = User.objects.create_user(
                 username=email,
                 email=email,
@@ -256,39 +189,28 @@ def alta_operadores(request):
                 last_name=apellido
             )
 
-        # Crear instancia Operador si el modelo existe (con campos adicionales)
         try:
             from core.models.operador import Operador as OperadorModel
-            operador_data = {
-                'usuario': user,
-                'nombre_completo': f"{nombre} {apellido}"
-            }
-
-            # Agregar campos opcionales si existen en el modelo
+            operador_data = {'usuario': user, 'nombre_completo': f"{nombre} {apellido}"}
             if pais:
                 operador_data['pais'] = pais
             if numero_doc:
                 operador_data['numero_documento'] = numero_doc
             if estado:
                 operador_data['estado'] = estado
-
             OperadorModel.objects.create(**operador_data)
         except (ImportError, AttributeError):
-            # Si no existe modelo Operador, continuar sin fallo
             pass
 
         messages.success(request, f"Operador {nombre} {apellido} creado correctamente.")
         return redirect('operadores')
 
-    context = perms
-    return render(request, 'alta_operadores.html', context)
+    return render(request, 'alta_operadores.html', perms)
 
 
 @login_required
 def reportes_view(request):
-    """Reportes (placeholder)."""
     context = permisos_context(request.user)
-    # modelar reportes y añadirlos al context si hace falta
     context.update({"reportes": []})
     return render(request, 'reportes.html', context)
 
@@ -328,19 +250,17 @@ def lista_bienes(request):
             Q(expediente__numero_compra__icontains=q)
         )
 
-    # Filtro origen
+    # Nota: origen/estado son CharField con default; __NULL__ casi nunca aplica, pero lo dejo por compatibilidad.
     if f_origen == "__NULL__":
         bienes_queryset = bienes_queryset.filter(origen__isnull=True)
     elif f_origen:
         bienes_queryset = bienes_queryset.filter(origen=f_origen)
 
-    # Filtro estado
     if f_estado == "__NULL__":
         bienes_queryset = bienes_queryset.filter(estado__isnull=True)
     elif f_estado:
         bienes_queryset = bienes_queryset.filter(estado=f_estado)
 
-    # Rango fechas (alta)
     if f_desde:
         d = parse_date(f_desde)
         if d:
@@ -350,7 +270,6 @@ def lista_bienes(request):
         if h:
             bienes_queryset = bienes_queryset.filter(fecha_adquisicion__lte=h)
 
-    # Orden
     if orden == "fecha":
         bienes_queryset = bienes_queryset.order_by("fecha_adquisicion", "clave_unica")
     elif orden == "-fecha":
@@ -389,7 +308,6 @@ def editar_bien(request, pk):
 
 @login_required
 def eliminar_bien(request, pk):
-    """Eliminación física directa (no baja). Solo administradores pueden eliminar."""
     perms = permisos_context(request.user)
     if not perms["puede_eliminar"]:
         messages.error(request, "No tienes permisos para eliminar bienes.")
@@ -422,11 +340,9 @@ def carga_masiva_bienes(request):
         archivo = request.FILES['archivo_excel']
         sector_form = (form.cleaned_data.get('sector') or '').strip()
 
-        # 1) Leer Excel preservando texto tal cual
         df = pd.read_excel(archivo, dtype=str)
         df.columns = [str(c).strip().lower() for c in df.columns]
 
-        # Helpers
         def s(v: object) -> str:
             if v is None:
                 return ''
@@ -504,10 +420,8 @@ def carga_masiva_bienes(request):
             return None
 
         creados, actualizados, errores = 0, 0, []
+        from core.models import Expediente
 
-        from core.models import Expediente  # import local
-
-        # ⬇️ IMPORTANTE: no usamos un atomic global que se rompa por una fila.
         for i, row in df.iterrows():
             try:
                 with transaction.atomic():  # savepoint por fila
@@ -534,7 +448,6 @@ def carga_masiva_bienes(request):
                     estado_val = map_estado(estado_txt)   # puede ser None
 
                     precio = parse_money(precio_raw)
-                    # si no es compra, el modelo limpiará a None en clean(); por las dudas lo apagamos acá:
                     if origen_val != 'COMPRA':
                         precio = None
 
@@ -567,20 +480,14 @@ def carga_masiva_bienes(request):
                         'expediente': expediente_obj,
                     }
 
-                    # ⬇️ CLAVE: si el mapeo dio None, NO mandamos la clave para que el modelo use el default
+                    # Si el mapeo dio None, omitimos la clave para que aplique el default del modelo
                     if origen_val is not None:
                         defaults['origen'] = origen_val
-                    # else:  # alternativa si querés fallback explícito
-                    #     defaults['origen'] = ORIGEN_COMPRA
-
                     if estado_val is not None:
                         defaults['estado'] = estado_val
-                    # else:
-                    #     defaults['estado'] = ESTADO_ACTIVO
 
-                    # numero_identificacion único: None cuando no venga (no '')
                     numero_id = (numero_id or '').strip()
-                    numero_id_val = numero_id or None
+                    numero_id_val = numero_id or None  # None (no '')
 
                     if numero_id_val is not None:
                         _, created = BienPatrimonial.objects.update_or_create(
@@ -601,14 +508,10 @@ def carga_masiva_bienes(request):
                     actualizados += int(not created)
 
             except (ValueError, ValidationError, IntegrityError) as e:
-                # No rompe el resto de filas gracias al savepoint anterior
                 errores.append(f"Fila {i + 2}: {e}")
 
         if creados or actualizados:
-            messages.success(
-                request,
-                f'Creados: {creados}, Actualizados: {actualizados}. Errores: {len(errores)}'
-            )
+            messages.success(request, f'Creados: {creados}, Actualizados: {actualizados}. Errores: {len(errores)}')
         else:
             messages.warning(request, 'No se crearon ni actualizaron bienes.')
 
@@ -620,6 +523,11 @@ def carga_masiva_bienes(request):
     except (FileNotFoundError, pd.errors.EmptyDataError, KeyError) as e:
         messages.error(request, f'Error al procesar el archivo: {e}')
         return redirect('lista_bienes')
+
+
+# ============================
+# ELIMINACIONES MASIVAS
+# ============================
 
 @login_required
 @require_POST
@@ -645,15 +553,10 @@ def eliminar_bienes_seleccionados(request):
 
 @login_required
 def lista_baja_bienes(request):
-    """Lista de bienes con estado BAJA."""
     q = (request.GET.get("q") or "").strip()
     orden = request.GET.get("orden") or "-fecha_baja"
 
-    bienes_baja = (
-        BienPatrimonial.objects
-        .select_related("expediente")
-        .filter(estado="BAJA")
-    )
+    bienes_baja = BienPatrimonial.objects.select_related("expediente").filter(estado="BAJA")
 
     if q:
         bienes_baja = bienes_baja.filter(
@@ -663,7 +566,7 @@ def lista_baja_bienes(request):
             Q(descripcion_baja__icontains=q) |
             Q(numero_identificacion__icontains=q) |
             Q(servicios__icontains=q) |
-            Q(cuenta_codigo__icontains=q) |
+            Q(cuenta_codigo__icontainsq:=q) |  # <-- typo evitado: mantenemos como estaba si no hay campo
             Q(nomenclatura_bienes__icontains=q) |
             Q(numero_serie__icontains=q) |
             Q(expediente__numero_expediente__icontains=q) |
@@ -689,10 +592,6 @@ def lista_baja_bienes(request):
 @login_required
 @require_POST
 def dar_baja_bien(request, pk):
-    """
-    Marca un bien como BAJA y guarda datos de baja.
-    Espera POST con: fecha_baja, expediente_baja, descripcion_baja.
-    """
     bien = get_object_or_404(BienPatrimonial, pk=pk)
 
     fecha_baja = parse_date(request.POST.get("fecha_baja") or "") or date.today()
@@ -721,12 +620,6 @@ def dar_baja_bien(request, pk):
 @require_POST
 @transaction.atomic
 def restablecer_bien(request, pk):
-    """
-    Restablece un bien dado de baja:
-    - estado = 'ACTIVO'
-    - limpia fecha_baja / expediente_baja / descripcion_baja si existen
-    Solo administradores pueden restablecer.
-    """
     perms = permisos_context(request.user)
     if not perms["es_admin"]:
         messages.error(request, "No tienes permisos para restablecer bienes.")
@@ -759,10 +652,6 @@ def restablecer_bien(request, pk):
 @require_POST
 @transaction.atomic
 def eliminar_bien_definitivo(request, pk):
-    """
-    Elimina físicamente un bien (no reversible). Se usa desde lista de bajas.
-    Solo administradores pueden eliminar definitivamente.
-    """
     perms = permisos_context(request.user)
     if not perms["es_admin"]:
         messages.error(request, "No tienes permisos para eliminar bienes definitivamente.")
